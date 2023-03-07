@@ -1,0 +1,7 @@
+src/Debug
+src/.vs
+lib/*
+!lib/*.lib
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
