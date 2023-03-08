@@ -5,7 +5,6 @@
 *
 * For use with SFML
 *   Contains additional useful functions for manipulating SFML UI elements
-*	To-Do's: Add overloads for different object/param types
 *
 * ------------------------------------------------------------ */
 #pragma once
@@ -16,7 +15,8 @@ enum cornerType { TOP_RIGHT, TOP_LEFT, BOTTOM_LEFT, BOTTOM_RIGHT }; //for settin
 
 namespace myUiTools {
 	/**
-	* Returns the coordinates of a specific corner in realtion to a given (rectangle) bounds.
+	* Returns the coordinates of a specific corner in realtion to a given (rectangle) bounds. 
+	* Returns values between 0 and bounds.x/bounds.y (inclusive)
 	* Add overloads for other types including sf::FloatRect?
 	*
 	*   @param corner - the desired corner of the rectangle

@@ -145,7 +145,7 @@ private:
 	// formatting
 	const cornerType DEFAULT_DOCKING_POSITION = TOP_LEFT;
 	const cornerType DEFAULT_TEXT_ORIGIN_POINT = TOP_LEFT; // #check - change depending on where window is docked?
-	const int DEFAULT_COMPONENT_BUFFER = 5; // #check
+	const int DEFAULT_COMPONENT_BUFFER = 10; // #check
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj
@@ -161,6 +161,7 @@ private:
 	int componentBuffer;	//space between menu components
 	int numElements;	//number of components currently in the debug menu. Starts at 0 at the beginning of draw()
 	bool outlinePosSet;	//used to determine whether to set the oultine position in draw()
+	bool mustReformatElements;
 
 	std::unordered_map<std::string, sf::Font*> fonts;
 	sf::Font* backupFontObj;	//used when user doesn't specify font to use
@@ -176,9 +177,13 @@ private:
 	// reformat existing elements to use new padding; called in setPadding()
 	void applyNewPadding(float diffPaddingX, float diffPaddingY);
 
+	// reformat elements within the menu
+	void reformatElements(sf::RenderWindow& win);
+
 	sf::Text* menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse);
 
-	sf::Text* getLast();
+	// gets the index of the last non-null entry in the textObjs array
+	int getLastIndex();
 
 	// deprecated?
 	void outputInvalidCornerTypeMessage(std::string functionName);

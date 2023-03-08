@@ -24,6 +24,7 @@ Menu::Menu() {
 	componentBuffer = DEFAULT_COMPONENT_BUFFER;
 	numElements = 0;
 	outlinePosSet = false;
+	mustReformatElements = false;
 
 	// objects
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
@@ -60,6 +61,11 @@ void Menu::setType(menuType type) {
 
 bool Menu::setDockingPosition(cornerType corner)
 {
+	if (dockingPosition == corner) {
+		// nothing changes
+		return true; // #check
+	}
+
 	switch (corner) {
 	case TOP_RIGHT:
 		dockingPosition = TOP_RIGHT;
@@ -82,6 +88,10 @@ bool Menu::setDockingPosition(cornerType corner)
 		setTextOriginPoint(corner);
 	}
 
+	if (numElements > 0) {
+
+		mustReformatElements = true; // reformat elements on the next draw call
+	}
 	outlinePosSet = false;	//next draw call must change outline position
 	return true;
 }
@@ -146,156 +156,15 @@ sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text) {
 
 sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text, const sf::Text& textObj) {
 	return menuAdditionOperations(win, text, textObj);
-	/*
-	// loop over textObjs
-	bool foundPlace = false;
-	int index = 0;
-
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	for (int x = 0; x < len; x++) {
-		if (!foundPlace) {
-			if (textObjs[x] == NULL) {
-				// add object and save its index
-				textObjs[x] = new sf::Text(textObj);
-				foundPlace = true;
-				index = x;
-			}
-		} else {
-			break;
-		}
-	}
-
-	if (foundPlace) {
-		sf::Text* addedItem = textObjs[index];
-		addedItem->setString(text);
-
-		// alignment
-		myUiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
-
-		if (dockingPosition == TOP_LEFT || dockingPosition == TOP_RIGHT) {
-			// set new obj position relative to dockingPosition and other elements
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-			sf::Vector2f objDrawPosition = { innerCorner.x, innerCorner.y + (textObj.getCharacterSize() + componentBuffer) * numElements };
-			addedItem->setPosition(objDrawPosition);
-		} else {
-			// set new element at same spot every time and move previous elements up by one "space"
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-			addedItem->setPosition(innerCorner);
-
-			// move previous elements up
-			for (int i = index - 1; i >= 0; i--) {
-				float newY = textObjs[i + 1]->getPosition().y - textObjs[i + 1]->getCharacterSize() - componentBuffer;
-				textObjs[i]->setPosition(textObjs[i]->getPosition().x, newY);
-			}
-		}
-
-		// if new element's width is greater than the bounds of the menu, resize the bounds
-		if (addedItem->getLocalBounds().width + paddingX > bounds.x)
-			setBounds(addedItem->getLocalBounds().width + paddingX * 2, bounds.y + textObj.getCharacterSize() + componentBuffer);
-		else
-			setBounds(bounds.x, bounds.y += textObj.getCharacterSize() + componentBuffer);
-
-		numElements++;
-
-		return addedItem;
-	} else {
-		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
-		return nullptr;
-	}
-	*/
 }
-
-/*
-sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text, const sf::Text& textObj) {
-	// loop over textObjs
-	bool foundPlace = false;
-	int index = 0;
-
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	for (int x = 0; x < len; x++) {
-		if (!foundPlace) {
-			if (textObjs[x] == NULL) {
-				// add object and save its index
-				textObjs[x] = new sf::Text;
-				foundPlace = true;
-				index = x;
-			}
-		} else {
-			break;
-		}
-	}
-
-	sf::Text* addedItem = textObjs[index];
-
-	if (foundPlace) {
-		// Set text object properties
-		addedItem->setCharacterSize(textTemplate.textHeight);
-
-		// look for font object
-		// #check - only stores default font at the moment
-
-		auto it = fonts.find(textTemplate.fontName);
-
-		if (it != fonts.end()) {
-			// found font
-			addedItem->setFont(*(it->second));
-		} else {
-			// try to create font obj
-			sf::Font* f = new sf::Font;
-			if (!f->loadFromFile(textTemplate.fontName)) {
-				std::cout << "ERROR: Error loading font! (Menu::addMenuItem()). Using backup font\n";
-				auto it = fonts.find(BACKUP_FONT_NAME);
-				addedItem->setFont(*(it->second));
-			} else {
-				auto i = fonts.insert(std::make_pair(textTemplate.fontName, f));
-				addedItem->setFont(*f);
-			}
-		}
-
-		addedItem->setString(text);
-
-		myUiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
-
-		if (dockingPosition == TOP_LEFT || dockingPosition == TOP_RIGHT) {
-			// set new obj position relative to dockingPosition and other elements
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-			sf::Vector2f objDrawPosition = { innerCorner.x, innerCorner.y + (textTemplate.textHeight + componentBuffer) * numElements };
-			addedItem->setPosition(objDrawPosition);
-		} else {
-			// set new element at same spot every time and move previous elements up by one "space"
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-			addedItem->setPosition(innerCorner);
-
-			// move previous elements up
-			for (int i = index - 1; i >= 0; i--) {
-				std::string contents = textObjs[i]->getString();
-				float newY = textObjs[i + 1]->getPosition().y - textObjs[i + 1]->getCharacterSize() - componentBuffer;
-				textObjs[i]->setPosition(textObjs[i]->getPosition().x, newY);
-			}
-		}
-
-		// if new element's width is greater than the bounds of the menu, resize the bounds
-		if (addedItem->getLocalBounds().width + paddingX > bounds.x)
-			setBounds(addedItem->getLocalBounds().width + paddingX * 2, bounds.y + textTemplate.textHeight + componentBuffer);
-		else
-			setBounds(bounds.x, bounds.y += textTemplate.textHeight + componentBuffer);
-
-		numElements++;
-
-		return addedItem;
-	} else {
-		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
-		return nullptr;
-	}
-}
-*/
 
 void Menu::draw(sf::RenderWindow& win)
 {
+	if (mustReformatElements) {
+		reformatElements(win); // #check
+		mustReformatElements = false;
+	}
+
 	// text objects
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
 	for (int i = 0; i < len; i++) {
@@ -311,6 +180,7 @@ void Menu::draw(sf::RenderWindow& win)
 						myUiTools::setObjectOrigin(*textObjs[i], TOP_RIGHT);
 					else
 						myUiTools::setObjectOrigin(*textObjs[i], BOTTOM_RIGHT);
+
 					sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
 					sf::Vector2f innerCorner = getInnerCorner(outerCorner);
 					textObjs[i]->setPosition(innerCorner.x, textObjs[i]->getPosition().y);
@@ -326,6 +196,8 @@ void Menu::draw(sf::RenderWindow& win)
 					outline.setPosition(myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) }));
 				win.draw(outline);
 			}
+		} else {
+			break;
 		}
 	}
 }
@@ -392,6 +264,37 @@ void Menu::applyNewPadding(float diffPaddingX, float diffPaddingY) {
 	}
 }
 
+void Menu::reformatElements(sf::RenderWindow& win)
+{
+	// Brute force method #improve
+	// Remove each item, creating copy as we go
+	// add each item back in using addMenuItem()
+
+	// #improve - implement a removeMenuItem() function
+	// temporary solution
+	// reset menu properties before loop
+	float oldPaddingX = paddingX;
+	float oldPaddingY = paddingY;
+	numElements = 0;
+	setBounds(0, 0);
+	paddingX = 0;
+	paddingY = 0;
+
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			sf::Text copy = sf::Text(*textObjs[i]);
+			delete textObjs[i];
+			textObjs[i] = NULL;
+			addMenuItem(win, copy.getString(), copy);
+		} else {
+			break;
+		}
+	}
+
+	setPadding(oldPaddingX, oldPaddingY);
+}
+
 sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {
 	// loop over textObjs
 	bool foundPlace = false;
@@ -418,7 +321,7 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 		// get useful properties
 		int addedItemHeight = addedItem->getCharacterSize();
 
-		// alignment
+		// Alignment
 		myUiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
 
 		if (dockingPosition == TOP_LEFT || dockingPosition == TOP_RIGHT) {
@@ -426,7 +329,10 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
 			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
 
-			sf::Text* lastElementAdded = getLast();
+			sf::Text* lastElementAdded = NULL;
+			if (index >= 1) {
+				lastElementAdded = textObjs[index - 1];
+			}
 			sf::Vector2f objDrawPosition;
 			if (lastElementAdded != NULL) {
 				objDrawPosition = { innerCorner.x, lastElementAdded->getPosition().y + lastElementAdded->getCharacterSize() + componentBuffer };
@@ -441,22 +347,33 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 			addedItem->setPosition(innerCorner);
 
 			// move previous elements up
+			int counter = 0;
 			for (int i = index - 1; i >= 0; i--) {
-				std::string s = textObjs[i]->getString();
-				float newY = textObjs[i + 1]->getPosition().y - textObjs[i + 1]->getCharacterSize() - componentBuffer;
+				sf::Text* lastElementAdded = textObjs[i + 1];
+				float newY = lastElementAdded->getPosition().y - lastElementAdded->getCharacterSize() - componentBuffer;
 				textObjs[i]->setPosition(textObjs[i]->getPosition().x, newY);
+				counter++;
 			}
 		}
 
-		// if new element's width is greater than the bounds of the menu, resize the bounds
+		// Resize menu bounds
 		sf::FloatRect addedItemBounds = addedItem->getLocalBounds();
-		if (addedItemBounds.width + paddingX > bounds.x)
-			setBounds(addedItemBounds.width + paddingX * 2, bounds.y + addedItemHeight + componentBuffer);
-		else
-			setBounds(bounds.x, bounds.y += addedItemHeight + componentBuffer);
+		float newBoundsX = bounds.x;
+		float newBoundsY = 0;
+
+		// if new element's width is greater than the bounds of the menu, change bounds.x
+		if (addedItemBounds.width + paddingX * 2 > bounds.x) {
+			newBoundsX = addedItemBounds.width + paddingX * 2;
+		}
+		// change bounds.y
+		if (numElements == 0) {
+			newBoundsY = bounds.y + addedItemHeight;
+		} else {
+			newBoundsY = bounds.y + addedItemHeight + componentBuffer;
+		}
+		setBounds(newBoundsX, newBoundsY);
 
 		numElements++;
-
 		return addedItem;
 	} else {
 		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
@@ -464,9 +381,8 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 	}
 }
 
-sf::Text* Menu::getLast() {
+int Menu::getLastIndex() {
 	// can be optimized? - #check
-
 	// stepwise solution
 	int counter = 0;
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
@@ -478,11 +394,7 @@ sf::Text* Menu::getLast() {
 		}
 	}
 
-	if (counter != 1) {
-		return textObjs[counter - 2];
-	} else {
-		return nullptr;
-	}
+	return counter - 1;
 }
 
 void Menu::outputInvalidCornerTypeMessage(std::string functionName) {

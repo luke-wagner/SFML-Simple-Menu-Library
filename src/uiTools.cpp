@@ -24,13 +24,16 @@ namespace myUiTools {
 		}
 	}
 
+	// ======================================================
+	// Text object functions
+
 	void setObjectOrigin(sf::Text& obj, const cornerType originPoint) {
 		sf::FloatRect objBounds = obj.getLocalBounds(); // get object bounds
 
 		// necessary for text objs because of built in padding
 		sf::Vector2f offset = { objBounds.left, objBounds.top };
 
-		sf::Vector2f newOrigin = cornerTypeToVector(originPoint, { objBounds.width, objBounds.height }) + offset;
+		sf::Vector2f newOrigin = cornerTypeToVector(originPoint, { objBounds.width, static_cast<float>(obj.getCharacterSize()) }) + offset;
 		obj.setOrigin(newOrigin);
 	}
 
@@ -40,7 +43,7 @@ namespace myUiTools {
 
 		int height = static_cast<float>(objToDraw.getCharacterSize());
 		sf::RectangleShape outline(sf::Vector2f(bounds.width, height));
-		outline.setOrigin(bounds.left, bounds.top);
+		outline.setOrigin(0, 0);
 		outline.setPosition(sf::Vector2f(globalBounds.left, globalBounds.top));
 		outline.setOutlineColor(color);
 		outline.setOutlineThickness(1);
