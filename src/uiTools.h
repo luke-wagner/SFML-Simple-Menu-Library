@@ -4,16 +4,16 @@
 * @version 1.0
 *
 * For use with SFML
-*   Contains additional useful functions for manipulating SFML UI elements
+*   Contains functions for manipulating SFML UI elements not found in Menu class
 *
 * ------------------------------------------------------------ */
 #pragma once
 
 #include <SFML/Graphics.hpp>
 
-enum cornerType { TOP_RIGHT, TOP_LEFT, BOTTOM_LEFT, BOTTOM_RIGHT }; //for setting UI properties relative to local bounds
+namespace uiTools {
+	enum cornerType { TOP_RIGHT, TOP_LEFT, BOTTOM_LEFT, BOTTOM_RIGHT }; //for setting UI properties relative to local bounds
 
-namespace myUiTools {
 	/**
 	* Returns the coordinates of a specific corner in realtion to a given (rectangle) bounds. 
 	* Returns values between 0 and bounds.x/bounds.y (inclusive)

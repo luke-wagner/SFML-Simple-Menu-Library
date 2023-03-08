@@ -10,27 +10,17 @@
 #pragma once
 
 #include <unordered_map>
-#include "uiTools.h" // for cornerType type #check - make separate file?
+#include "uiTools.h"
 
 class Menu {
 
 public:
-	enum menuType { DYNAMIC, STATIC };	//#check
-
-	bool menuShown;	//when enabled, menu is drawn every frame to the window (false by default)
-	bool showComponentOutlines;	//when enabled, draws outlines around UI elements to the screen
-	bool showMenuBounds;	//#check
-
-	std::string defaultFontName;	//same as in defaultTextTemplate
+	enum menuType { DYNAMIC, STATIC };
 
 	// Object arrays for storing and pulling UI elements
-	// Max number of each type is hardcoded in
-	// Experiment with a tuple format (ELEMENT, SHOWN/DYNAMIC)? #check
 	sf::Text* textObjs[30]; // #check - make private?
 
 	sf::Text defaultTextObj;
-
-	sf::RectangleShape outline;
 
 	// ======================================================
 	// Constructors
@@ -39,29 +29,7 @@ public:
 	*/
 	Menu();
 
-	// ------------------------------------------------------
-	/**
-	* Not yet implemented
-	*/
-	Menu(cornerType dockingPosition, cornerType textOriginPoint, float paddingX, float paddingY);
-
-	// ------------------------------------------------------
-	/**
-	* Not yet implemented
-	*/
-	Menu(cornerType dockingPosition, cornerType textOriginPoint, float paddingX, float paddingY, sf::Text defaultTextObj);
-
-	// ------------------------------------------------------
-	/**
-	* Not yet implemented
-	*/
-	Menu(cornerType dockingPosition, cornerType textOriginPoint, float paddingX, float paddingY, int componentBuffer);
-
-	// ------------------------------------------------------
-	/**
-	* Not yet implemented
-	*/
-	Menu(cornerType dockingPosition, cornerType textOriginPoint, float paddingX, float paddingY, sf::Color backgroundColor);
+	// Add other constructors? #improve
 
 	// ======================================================
 	// Mutators
@@ -79,7 +47,7 @@ public:
 	*   @param corner - which corner to dock to
 	*	@return true if changed succesfully
 	*/
-	bool setDockingPosition(cornerType corner);
+	bool setDockingPosition(uiTools::cornerType corner);
 
 	// ------------------------------------------------------
 	/**
@@ -88,9 +56,55 @@ public:
 	*   @param corner - which corner to start drawing text objects at
 	*	@return true if changed succesfully
 	*/
-	bool setTextOriginPoint(cornerType corner);
+	bool setTextOriginPoint(uiTools::cornerType corner);
 
+	// ------------------------------------------------------
+	/**
+	* Sets how much space (padding) is given between the edges of the window
+	* and the start of the menu.
+	*
+	*   @param x - amount of horizontal space
+	*   @param y - amount of vertical space
+	*	@return true if changed succesfully
+	*/
 	bool setPadding(float x, float y);
+
+	// ======================================================
+	// Appearance
+	/**
+	* Causes menu to be displayed to the window as part of Menu::draw()
+	*/
+	void showMenu();
+
+	// ------------------------------------------------------
+	/**
+	* Stops menu from being displayed to the window in Menu::draw()
+	*/
+	void hideMenu();
+
+	// ------------------------------------------------------
+	/**
+	* Causes menu outline to be displayed to the window as part of Menu::draw()
+	*/
+	void showMenuBounds();
+
+	// ------------------------------------------------------
+	/**
+	* Stops menu outline from being displayed to the window in Menu::draw()
+	*/
+	void hideMenuBounds();
+
+	// ------------------------------------------------------
+	/**
+	* Causes menu item outlines to be displayed to the window as part of Menu::draw()
+	*/
+	void showComponentOutlines();
+
+	// ------------------------------------------------------
+	/**
+	* Stops menu item outlines from being displayed to the window in Menu::draw()
+	*/
+	void hideComponentOutlines();
 
 	// ======================================================
 	// Miscallaneous
@@ -100,10 +114,10 @@ public:
 
 	// ------------------------------------------------------
 	/**
-	* Draws new menu item relative to other existing items. Currently only supported for sf::Text objects.
+	* Adds new menu item relative to other existing items. Currently only supported for sf::Text objects.
 	* Creates new sf::Text object and stores it in textObjs[], will re-use font objects if possible
 	*
-	*   @param win - the window on which we’ll draw the menu components
+	*   @param win - a reference to the window object
 	*	@param text - what string should the text object hold
 	*	@return pointer to added object if added sucessfully. Otherwise returns a NULL pointer
 	*/
@@ -111,10 +125,10 @@ public:
 
 	// ------------------------------------------------------
 	/**
-	* Draws new menu item relative to other existing items. Currently only supported for sf::Text objects.
+	* Adds new menu item relative to other existing items. Currently only supported for sf::Text objects.
 	* Creates new sf::Text object and stores it in textObjs[], will re-use font objects if possible
 	*
-	*   @param win - the window on which we’ll draw the menu components
+	*   @param win - a reference to the window object
 	*	@param text - what string should the text object hold
 	*	@param textObj - the text object to use to add the menu item
 	*	@return pointer to added object if added sucessfully. Otherwise returns a NULL pointer
@@ -125,12 +139,12 @@ public:
 	/**
 	* Toggles the menu on/off
 	*/
-	void toggleShown();
+	void toggleMenuShown();
 
 	// ------------------------------------------------------
 	/**
-	* Draws all items to the window - only function that must be called EVERY frame.
-	* Does some basic reformatting of objects in the menu
+	* Draws all menu items to the window - only function that must be called EVERY frame.
+	* Also does some basic reformatting of objects in the menu
 	* so that they all remain within the bounds of the window.
 	*
 	*   @param win - the window on which we’ll draw the menu components
@@ -143,48 +157,91 @@ private:
 	// ------------------------------------------------------
 	// Constants
 	// formatting
-	const cornerType DEFAULT_DOCKING_POSITION = TOP_LEFT;
-	const cornerType DEFAULT_TEXT_ORIGIN_POINT = TOP_LEFT; // #check - change depending on where window is docked?
-	const int DEFAULT_COMPONENT_BUFFER = 10; // #check
+	const uiTools::cornerType DEFAULT_DOCKING_POSITION = uiTools::TOP_LEFT;
+	const uiTools::cornerType DEFAULT_TEXT_ORIGIN_POINT = uiTools::TOP_LEFT;
+	const int DEFAULT_COMPONENT_BUFFER = 10;
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj
 
 	// ------------------------------------------------------
 	// Variables
+	bool menuShown;	//when enabled, menu is drawn every frame to the window (false by default)
+	bool componentOutlinesShown;	//when enabled, draws outlines around UI elements to the screen
+	bool menuBoundsShown;	//draws an outline around the whole menu
+
 	// formatting
-	cornerType dockingPosition;	//where to start drawing elements relative to the window
-	cornerType textOriginPoint;	//which corner to start drawing text objects at.
-	sf::Vector2f bounds; //width and height of the menu
+	uiTools::cornerType dockingPosition;	//where to start drawing elements relative to the window
+	uiTools::cornerType textOriginPoint;	//which corner to start drawing text objects at.
+	sf::Vector2f bounds;	//width and height of the menu
 	float paddingX;	//amount of space between edge of menu and start of UI
 	float paddingY;	//amount of space between edge of menu and start of UI elements
 	int componentBuffer;	//space between menu components
-	int numElements;	//number of components currently in the debug menu. Starts at 0 at the beginning of draw()
+	int numElements;	//number of total menu items
 	bool outlinePosSet;	//used to determine whether to set the oultine position in draw()
-	bool mustReformatElements;
+	bool mustReformatElements;	//if true, menu items are reformatted at start of draw()
 
 	std::unordered_map<std::string, sf::Font*> fonts;
-	sf::Font* backupFontObj;	//used when user doesn't specify font to use
+	sf::Font* backupFontObj;	//used when user doesn't specify what font to use
+
+	sf::RectangleShape outline;	//the object for drawing the bounds of the menu
 
 	// misc
 	sf::Color backgroundColor;	//set to transparent by default
 
-	// gets the inner corner of the menu from the outer corner
+	// ------------------------------------------------------
+	// Functions
+	/**
+	* Gets the coordinates of the menu's inner corner from the outer corner
+	*
+	*   @param outerCorner - the coordinates of the menu's outer corner
+	*	@return Vector2f - the coordinates of the menu's inner corner
+	*/
 	sf::Vector2f getInnerCorner(sf::Vector2f outerCorner);
 
+	// ------------------------------------------------------
+	/**
+	* Sets the menu's bounds and resizes its outline object
+	*
+	*   @param x - the new width of the menu
+	*   @param y - the new height of the menu
+	*/
 	void setBounds(float x, float y);
 
-	// reformat existing elements to use new padding; called in setPadding()
+	// ------------------------------------------------------
+	/**
+	* Reformats existing elements to use new padding; called in setPadding()
+	*
+	*   @param diffPaddingX - the change in horizontal padding
+	*   @param diffPadingY - the change in vertical padding
+	*/
 	void applyNewPadding(float diffPaddingX, float diffPaddingY);
 
-	// reformat elements within the menu
+	// ------------------------------------------------------
+	/**
+	* Important: INEFFICIENT. Reformats elements within the menu by deleting
+	* each menu item and readding it then formatting the menu again.
+	* Essentially "recreates" the menu
+	*
+	*   @param win - a reference to the window object
+	*/
 	void reformatElements(sf::RenderWindow& win);
 
+	// ------------------------------------------------------
+	/**
+	* Contains most of the functionality for Menu::addMenuItem()
+	*
+	*   @param win - a reference to the window object
+	*	@param text - what the added text object should display
+	*	@param objToUse - the sf::Text object to use as a template for formatting
+	*/
 	sf::Text* menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse);
 
-	// gets the index of the last non-null entry in the textObjs array
+	// ------------------------------------------------------
+	/**
+	* Gets the index of the last non-null entry in the textObjs array
+	*
+	*   @return int - the index of the sf::Text object in textObjs[]
+	*/
 	int getLastIndex();
-
-	// deprecated?
-	void outputInvalidCornerTypeMessage(std::string functionName);
 };

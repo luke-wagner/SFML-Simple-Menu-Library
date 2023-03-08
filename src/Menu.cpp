@@ -32,7 +32,6 @@ Menu::Menu() {
 		textObjs[i] = NULL;
 	}
 
-	defaultFontName = BACKUP_FONT_NAME;
 	backupFontObj = new sf::Font;
 	fonts.insert(std::make_pair(BACKUP_FONT_NAME, backupFontObj));
 
@@ -48,9 +47,9 @@ Menu::Menu() {
 	outline.setOutlineColor(sf::Color::White);
 
 	// miscellaneous
-	menuShown = false;
-	showComponentOutlines = false;
-	showMenuBounds = false;
+	menuShown = true;
+	componentOutlinesShown = false;
+	menuBoundsShown = false;
 	backgroundColor = sf::Color::Transparent;
 }
 
@@ -59,7 +58,7 @@ void Menu::setType(menuType type) {
 	this->type = type;
 }
 
-bool Menu::setDockingPosition(cornerType corner)
+bool Menu::setDockingPosition(uiTools::cornerType corner)
 {
 	if (dockingPosition == corner) {
 		// nothing changes
@@ -67,21 +66,18 @@ bool Menu::setDockingPosition(cornerType corner)
 	}
 
 	switch (corner) {
-	case TOP_RIGHT:
-		dockingPosition = TOP_RIGHT;
+	case uiTools::TOP_RIGHT:
+		dockingPosition = uiTools::TOP_RIGHT;
 		break;
-	case TOP_LEFT:
-		dockingPosition = TOP_LEFT;
+	case uiTools::TOP_LEFT:
+		dockingPosition = uiTools::TOP_LEFT;
 		break;
-	case BOTTOM_LEFT:
-		dockingPosition = BOTTOM_LEFT;
+	case uiTools::BOTTOM_LEFT:
+		dockingPosition = uiTools::BOTTOM_LEFT;
 		break;
-	case BOTTOM_RIGHT:
-		dockingPosition = BOTTOM_RIGHT;
+	case uiTools::BOTTOM_RIGHT:
+		dockingPosition = uiTools::BOTTOM_RIGHT;
 		break;
-	default:
-		outputInvalidCornerTypeMessage(__func__);
-		return false;
 	}
 
 	if (type == DYNAMIC) {
@@ -96,24 +92,21 @@ bool Menu::setDockingPosition(cornerType corner)
 	return true;
 }
 
-bool Menu::setTextOriginPoint(cornerType corner)
+bool Menu::setTextOriginPoint(uiTools::cornerType corner)
 {
 	switch (corner) {
-	case TOP_RIGHT:
-		textOriginPoint = TOP_RIGHT;
+	case uiTools::TOP_RIGHT:
+		textOriginPoint = uiTools::TOP_RIGHT;
 		break;
-	case TOP_LEFT:
-		textOriginPoint = TOP_LEFT;
+	case uiTools::TOP_LEFT:
+		textOriginPoint = uiTools::TOP_LEFT;
 		break;
-	case BOTTOM_LEFT:
-		textOriginPoint = BOTTOM_LEFT;
+	case uiTools::BOTTOM_LEFT:
+		textOriginPoint = uiTools::BOTTOM_LEFT;
 		break;
-	case BOTTOM_RIGHT:
-		textOriginPoint = BOTTOM_RIGHT;
+	case uiTools::BOTTOM_RIGHT:
+		textOriginPoint = uiTools::BOTTOM_RIGHT;
 		break;
-	default:
-		outputInvalidCornerTypeMessage(__func__);
-		return false;
 	}
 
 	return true;
@@ -145,6 +138,36 @@ bool Menu::setPadding(float x, float y) {
 	}
 }
 
+void Menu::showMenu()
+{
+	menuShown = true;
+}
+
+void Menu::hideMenu()
+{
+	menuShown = false;
+}
+
+void Menu::showMenuBounds()
+{
+	menuBoundsShown = true;
+}
+
+void Menu::hideMenuBounds()
+{
+	menuBoundsShown = false;
+}
+
+void Menu::showComponentOutlines()
+{
+	componentOutlinesShown = true;
+}
+
+void Menu::hideComponentOutlines()
+{
+	componentOutlinesShown = false;
+}
+
 void Menu::printSomething()
 {
 	std::cout << "This is a line of text";
@@ -171,38 +194,41 @@ void Menu::draw(sf::RenderWindow& win)
 		if (textObjs[i] != NULL) {
 			// Reformat any elements that would be out of bounds
 			// check first
-			if (dockingPosition == TOP_RIGHT || dockingPosition == BOTTOM_RIGHT) {
+			if (dockingPosition == uiTools::TOP_RIGHT || dockingPosition == uiTools::BOTTOM_RIGHT) {
 				sf::FloatRect localBounds = textObjs[i]->getLocalBounds();
 				if (localBounds.left + localBounds.width != textObjs[i]->getOrigin().x) {
 					// object's horizontal size has changed, must realigin in menu
 					// reset object origin
-					if (textOriginPoint == TOP_RIGHT)
-						myUiTools::setObjectOrigin(*textObjs[i], TOP_RIGHT);
+					if (textOriginPoint == uiTools::TOP_RIGHT)
+						uiTools::setObjectOrigin(*textObjs[i], uiTools::TOP_RIGHT);
 					else
-						myUiTools::setObjectOrigin(*textObjs[i], BOTTOM_RIGHT);
+						uiTools::setObjectOrigin(*textObjs[i], uiTools::BOTTOM_RIGHT);
 
-					sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
+					sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
 					sf::Vector2f innerCorner = getInnerCorner(outerCorner);
 					textObjs[i]->setPosition(innerCorner.x, textObjs[i]->getPosition().y);
 				}
 			}
 
 			sf::Text t = *textObjs[i];
-			win.draw(t);
-			if (showComponentOutlines)
-				myUiTools::drawOutline(win, t, sf::Color::White);
-			if (showMenuBounds) {
-				if (!outlinePosSet)
-					outline.setPosition(myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) }));
-				win.draw(outline);
+			if (menuShown) {
+				win.draw(t);
+				if (componentOutlinesShown)
+					uiTools::drawOutline(win, t, sf::Color::White);
 			}
 		} else {
 			break;
 		}
 	}
+
+	if (menuShown && menuBoundsShown) {
+		if (!outlinePosSet)
+			outline.setPosition(uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) }));
+		win.draw(outline);
+	}
 }
 
-void Menu::toggleShown() {
+void Menu::toggleMenuShown() {
 	if (!menuShown) {
 		menuShown = true;
 	} else {
@@ -212,16 +238,14 @@ void Menu::toggleShown() {
 
 sf::Vector2f Menu::getInnerCorner(sf::Vector2f outerCorner) {
 	switch (dockingPosition) {
-	case TOP_RIGHT:
+	case uiTools::TOP_RIGHT:
 		return { outerCorner.x - paddingX, outerCorner.y + paddingY };
-	case TOP_LEFT:
+	case uiTools::TOP_LEFT:
 		return { outerCorner.x + paddingX, outerCorner.y + paddingY };
-	case BOTTOM_LEFT:
+	case uiTools::BOTTOM_LEFT:
 		return { outerCorner.x + paddingX, outerCorner.y - paddingY };
-	case BOTTOM_RIGHT:
+	case uiTools::BOTTOM_RIGHT:
 		return { outerCorner.x - paddingX, outerCorner.y - paddingY };
-	default:
-		outputInvalidCornerTypeMessage(__func__);
 	}
 
 	return sf::Vector2f();
@@ -234,7 +258,7 @@ void Menu::setBounds(float x, float y) {
 
 	// update outline object
 	outline.setSize(bounds);
-	outline.setOrigin(myUiTools::cornerTypeToVector(dockingPosition, bounds));
+	outline.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
 }
 
 void Menu::applyNewPadding(float diffPaddingX, float diffPaddingY) {
@@ -244,21 +268,19 @@ void Menu::applyNewPadding(float diffPaddingX, float diffPaddingY) {
 		if (textObjs[i] != NULL) {
 			sf::Vector2f objPosition = textObjs[i]->getPosition();
 			switch (dockingPosition) {
-			case TOP_RIGHT:
+			case uiTools::TOP_RIGHT:
 				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y + diffPaddingY);
 				objPosition = textObjs[i]->getPosition();
 				break;
-			case TOP_LEFT:
+			case uiTools::TOP_LEFT:
 				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y + diffPaddingY);
 				break;
-			case BOTTOM_LEFT:
+			case uiTools::BOTTOM_LEFT:
 				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y - diffPaddingY);
 				break;
-			case BOTTOM_RIGHT:
+			case uiTools::BOTTOM_RIGHT:
 				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y - diffPaddingY);
 				break;
-			default:
-				outputInvalidCornerTypeMessage(__func__);
 			}
 		}
 	}
@@ -322,11 +344,11 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 		int addedItemHeight = addedItem->getCharacterSize();
 
 		// Alignment
-		myUiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
+		uiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
 
-		if (dockingPosition == TOP_LEFT || dockingPosition == TOP_RIGHT) {
+		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
 			// set new obj position relative to dockingPosition and other elements
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
+			sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
 			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
 
 			sf::Text* lastElementAdded = NULL;
@@ -342,7 +364,7 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 			addedItem->setPosition(objDrawPosition);
 		} else {
 			// set new element at same spot every time and move previous elements up by one "space"
-			sf::Vector2f outerCorner = myUiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
+			sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
 			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
 			addedItem->setPosition(innerCorner);
 
@@ -395,9 +417,4 @@ int Menu::getLastIndex() {
 	}
 
 	return counter - 1;
-}
-
-void Menu::outputInvalidCornerTypeMessage(std::string functionName) {
-	std::cout << "ERROR: Passed invalid corner type ("
-		<< functionName << "())" << std::endl;
 }

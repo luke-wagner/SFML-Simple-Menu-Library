@@ -1,7 +1,7 @@
 #include <iostream>
 #include "uiTools.h"
 
-namespace myUiTools {
+namespace uiTools {
 	sf::Vector2f cornerTypeToVector(cornerType corner, sf::Vector2f bounds)
 	{
 		switch (corner) {
