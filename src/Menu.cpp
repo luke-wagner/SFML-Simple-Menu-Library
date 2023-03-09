@@ -21,7 +21,7 @@ Menu::Menu() {
 	setTextOriginPoint(DEFAULT_TEXT_ORIGIN_POINT);
 	setBounds(0, 0);
 	setPadding(0, 0);
-	componentBuffer = DEFAULT_COMPONENT_BUFFER;
+	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
 	numElements = 0;
 	outlinePosSet = false;
 	mustReformatElements = false;
@@ -129,13 +129,29 @@ bool Menu::setPadding(float x, float y) {
 
 		if (numElements > 0) {
 			// reformat existing elements
-			applyNewPadding(diffPaddingX, diffPaddingY);
+			applyPaddingDiff(diffPaddingX, diffPaddingY);
 		}
 
 		return true;
 	} else {
 		return false;
 	}
+}
+
+bool Menu::setComponentBuffer(int newVal)
+{
+	// data validation
+	if (newVal >= 0) {
+		int oldVal = componentBuffer;
+		componentBuffer = newVal;
+
+		// move elements up/down
+		if (newVal != oldVal && numElements > 0)
+			applyCompBufferDiff(newVal - oldVal);
+
+		return true;
+	} else 
+		return false;	
 }
 
 void Menu::showMenu()
@@ -261,7 +277,7 @@ void Menu::setBounds(float x, float y) {
 	outline.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
 }
 
-void Menu::applyNewPadding(float diffPaddingX, float diffPaddingY) {
+void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
 	// text objects
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
 	for (int i = 0; i < len; i++) {
@@ -282,6 +298,32 @@ void Menu::applyNewPadding(float diffPaddingX, float diffPaddingY) {
 				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y - diffPaddingY);
 				break;
 			}
+		}
+	}
+}
+
+void Menu::applyCompBufferDiff(int diff)
+{
+	// text objects
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	int counter = 1;
+	for (int i = 1; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			counter++;
+			sf::Vector2f currentPos = textObjs[i]->getPosition();
+
+			if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
+				textObjs[i]->setPosition(currentPos.x, currentPos.y + i * diff);
+			}
+		} else {
+			if (dockingPosition == uiTools::BOTTOM_LEFT || dockingPosition == uiTools::BOTTOM_RIGHT) {
+				for (int i = counter - 1; i >= 0; i--) {
+					sf::Vector2f currentPos = textObjs[i]->getPosition();
+					textObjs[i]->setPosition(currentPos.x, currentPos.y - (counter - i - 1) * diff);
+				}
+			}
+
+			break;
 		}
 	}
 }

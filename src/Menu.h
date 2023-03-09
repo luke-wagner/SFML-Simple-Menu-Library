@@ -69,6 +69,8 @@ public:
 	*/
 	bool setPadding(float x, float y);
 
+	bool setComponentBuffer(int newVal);
+
 	// ======================================================
 	// Appearance
 	/**
@@ -215,7 +217,9 @@ private:
 	*   @param diffPaddingX - the change in horizontal padding
 	*   @param diffPadingY - the change in vertical padding
 	*/
-	void applyNewPadding(float diffPaddingX, float diffPaddingY);
+	void applyPaddingDiff(float diffPaddingX, float diffPaddingY);
+
+	void applyCompBufferDiff(int diff);
 
 	// ------------------------------------------------------
 	/**
