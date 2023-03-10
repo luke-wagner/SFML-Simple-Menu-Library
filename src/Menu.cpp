@@ -23,7 +23,6 @@ Menu::Menu() {
 	setPadding(0, 0);
 	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
 	numElements = 0;
-	outlinePosSet = false;
 	mustReformatElements = false;
 
 	// objects
@@ -85,10 +84,9 @@ bool Menu::setDockingPosition(uiTools::cornerType corner)
 	}
 
 	if (numElements > 0) {
-
 		mustReformatElements = true; // reformat elements on the next draw call
 	}
-	outlinePosSet = false;	//next draw call must change outline position
+
 	return true;
 }
 
@@ -150,8 +148,8 @@ bool Menu::setComponentBuffer(int newVal)
 			applyCompBufferDiff(newVal - oldVal);
 
 		return true;
-	} else 
-		return false;	
+	} else
+		return false;
 }
 
 void Menu::showMenu()
@@ -238,8 +236,11 @@ void Menu::draw(sf::RenderWindow& win)
 	}
 
 	if (menuShown && menuBoundsShown) {
-		if (!outlinePosSet)
-			outline.setPosition(uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) }));
+		sf::Vector2f windowBounds = { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) };
+		if (outline.getPosition() != uiTools::cornerTypeToVector(dockingPosition, windowBounds)) {
+			// dockingPosition has changed; must adjust outline position
+			outline.setPosition(uiTools::cornerTypeToVector(dockingPosition, windowBounds));
+		}
 		win.draw(outline);
 	}
 }
@@ -335,14 +336,9 @@ void Menu::reformatElements(sf::RenderWindow& win)
 	// add each item back in using addMenuItem()
 
 	// #improve - implement a removeMenuItem() function
-	// temporary solution
-	// reset menu properties before loop
-	float oldPaddingX = paddingX;
-	float oldPaddingY = paddingY;
+	// temporary solution: reset menu properties before loop
 	numElements = 0;
-	setBounds(0, 0);
-	paddingX = 0;
-	paddingY = 0;
+	setBounds(paddingX * 2, paddingY * 2); // not (0,0) because padding must be accounted for before adding items
 
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
 	for (int i = 0; i < len; i++) {
@@ -355,8 +351,6 @@ void Menu::reformatElements(sf::RenderWindow& win)
 			break;
 		}
 	}
-
-	setPadding(oldPaddingX, oldPaddingY);
 }
 
 sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {

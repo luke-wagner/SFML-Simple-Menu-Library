@@ -69,6 +69,14 @@ public:
 	*/
 	bool setPadding(float x, float y);
 
+	// ------------------------------------------------------
+	/**
+	* Sets the spacing between menu elements and reformats existing elements
+	* to use new component buffer if necessary.
+	*
+	*   @param newVal - the new component buffer value
+	*	@return true if changed succesfully
+	*/
 	bool setComponentBuffer(int newVal);
 
 	// ======================================================
@@ -111,7 +119,7 @@ public:
 	// ======================================================
 	// Miscallaneous
 
-	// only for testing
+	// only for testing #remove
 	void printSomething();
 
 	// ------------------------------------------------------
@@ -180,7 +188,6 @@ private:
 	float paddingY;	//amount of space between edge of menu and start of UI elements
 	int componentBuffer;	//space between menu components
 	int numElements;	//number of total menu items
-	bool outlinePosSet;	//used to determine whether to set the oultine position in draw()
 	bool mustReformatElements;	//if true, menu items are reformatted at start of draw()
 
 	std::unordered_map<std::string, sf::Font*> fonts;
@@ -219,6 +226,12 @@ private:
 	*/
 	void applyPaddingDiff(float diffPaddingX, float diffPaddingY);
 
+	// ------------------------------------------------------
+	/**
+	* Reformats existing elements to use the new component buffer; called in setCompBuffer()
+	*
+	*   @param diff - the new value versus the old one
+	*/
 	void applyCompBufferDiff(int diff);
 
 	// ------------------------------------------------------
