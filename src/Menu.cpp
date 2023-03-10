@@ -195,6 +195,69 @@ sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text, const sf::T
 	return menuAdditionOperations(win, text, textObj);
 }
 
+bool Menu::removeMenuItem(sf::Text* objToRemove)
+{
+	if (objToRemove == NULL) {
+		// trying to remove an object that may have already been deleted
+		return false;
+	}
+
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			if (textObjs[i] == objToRemove) {
+				// adjust other menu items' positions
+				if (dockingPosition == uiTools::TOP_RIGHT || dockingPosition == uiTools::TOP_LEFT) {
+					for (int j = i + 1; j < len; j++) {
+						if (textObjs[j] != NULL) {
+							sf::Vector2f currentPos = textObjs[j]->getPosition();
+							textObjs[j]->setPosition(currentPos.x, currentPos.y - textObjs[i]->getCharacterSize() - componentBuffer);
+						} else {
+							break;
+						}
+					}
+				} else {
+					for (int j = i - 1; j >= 0; j--) {
+						if (textObjs[j] != NULL) {
+							sf::Vector2f currentPos = textObjs[j]->getPosition();
+							textObjs[j]->setPosition(currentPos.x, currentPos.y + textObjs[i]->getCharacterSize() + componentBuffer);
+						} else {
+							break;
+						}
+					}
+				}
+				
+				// change menu bounds
+				bool widest = false;
+				if (getWidestItemIndex() == i) {
+					// objToRemove is the widest item in the menu
+					widest = true;
+				}
+				if (numElements > 1) {
+					setBounds(bounds.x, bounds.y - textObjs[i]->getCharacterSize() - componentBuffer);
+				} else {
+					setBounds(paddingX * 2, paddingY * 2);
+				}
+
+				// delete object and reformat array
+				delete textObjs[i];
+				textObjs[i] = NULL;
+				numElements--;
+				reformatArray(textObjs, len);
+
+				if (widest && textObjs[getWidestItemIndex()] != NULL) {
+					float newWidth = textObjs[getWidestItemIndex()]->getLocalBounds().width;
+					setBounds(newWidth + paddingX * 2, bounds.y);
+				}
+
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+}
+
 void Menu::draw(sf::RenderWindow& win)
 {
 	if (mustReformatElements) {
@@ -235,7 +298,8 @@ void Menu::draw(sf::RenderWindow& win)
 		}
 	}
 
-	if (menuShown && menuBoundsShown) {
+	if (menuShown && menuBoundsShown && 
+		(type == STATIC || (type == DYNAMIC && bounds.y > paddingY * 2))) {
 		sf::Vector2f windowBounds = { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) };
 		if (outline.getPosition() != uiTools::cornerTypeToVector(dockingPosition, windowBounds)) {
 			// dockingPosition has changed; must adjust outline position
@@ -353,6 +417,18 @@ void Menu::reformatElements(sf::RenderWindow& win)
 	}
 }
 
+void Menu::reformatArray(sf::Text* array[], int len)
+{
+	// expensive - #improve
+	for (int i = 0; i < len; i++) {
+		if (array[i] == NULL) {
+			for (int j = i + 1; j < len; j++) {
+				array[j - 1] = array[j];
+			}
+		}
+	}
+}
+
 sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {
 	// loop over textObjs
 	bool foundPlace = false;
@@ -453,4 +529,24 @@ int Menu::getLastIndex() {
 	}
 
 	return counter - 1;
+}
+
+int Menu::getWidestItemIndex()
+{
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	float greatestWidth = 0;
+	int index = 0;
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			float itemWidth = textObjs[i]->getLocalBounds().width;
+			if (itemWidth > greatestWidth) {
+				greatestWidth = itemWidth;
+				index = i;
+			}
+		} else {
+			break;
+		}
+	}
+
+	return index;
 }

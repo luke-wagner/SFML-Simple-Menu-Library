@@ -94,6 +94,12 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Toggles the menu on/off
+	*/
+	void toggleMenuShown();
+
+	// ------------------------------------------------------
+	/**
 	* Causes menu outline to be displayed to the window as part of Menu::draw()
 	*/
 	void showMenuBounds();
@@ -145,11 +151,7 @@ public:
 	*/
 	sf::Text* addMenuItem(sf::RenderWindow& win, const std::string text, const sf::Text& textObj);
 
-	// ------------------------------------------------------
-	/**
-	* Toggles the menu on/off
-	*/
-	void toggleMenuShown();
+	bool removeMenuItem(sf::Text* objToRemove);
 
 	// ------------------------------------------------------
 	/**
@@ -244,6 +246,8 @@ private:
 	*/
 	void reformatElements(sf::RenderWindow& win);
 
+	void reformatArray(sf::Text* array[], int len);
+
 	// ------------------------------------------------------
 	/**
 	* Contains most of the functionality for Menu::addMenuItem()
@@ -261,4 +265,6 @@ private:
 	*   @return int - the index of the sf::Text object in textObjs[]
 	*/
 	int getLastIndex();
+
+	int getWidestItemIndex();
 };
