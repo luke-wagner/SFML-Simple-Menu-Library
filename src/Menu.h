@@ -151,6 +151,16 @@ public:
 	*/
 	sf::Text* addMenuItem(sf::RenderWindow& win, const std::string text, const sf::Text& textObj);
 
+	// ------------------------------------------------------
+	/**
+	* Removes an item from the menu. Gets a pointer to the object to remove and deletes
+	* it from textObjs[] and frees up allocated memory. Important: if a pointer to this
+	* item was saved in addMenuItem(), it should be set to null, to prevent trying
+	* to access memory it can't access anymore.
+	*
+	*   @param objToRemove - a pointer to the object to remove
+	*	@return true if deletion was succesful
+	*/
 	bool removeMenuItem(sf::Text* objToRemove);
 
 	// ------------------------------------------------------
@@ -246,6 +256,15 @@ private:
 	*/
 	void reformatElements(sf::RenderWindow& win);
 
+	// ------------------------------------------------------
+	/**
+	* Reorders an array of objects to "fill in any holes" that were
+	* created by deleting items from the array. Where this function finds
+	* a nullptr (hole), all following items are moved back by 1 spot.
+	*
+	*   @param array - the array to reformat
+	*	@param len - the length of the array
+	*/
 	void reformatArray(sf::Text* array[], int len);
 
 	// ------------------------------------------------------
@@ -266,5 +285,12 @@ private:
 	*/
 	int getLastIndex();
 
+	// ------------------------------------------------------
+	/**
+	* Loops over the textObjs array and finds the index of the widest item.
+	* If there is a tie, simply returns the index of one of these objects.
+	*
+	*	@return int - the index of the item
+	*/
 	int getWidestItemIndex();
 };
