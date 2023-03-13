@@ -245,7 +245,7 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 						}
 					}
 				}
-				
+
 				// change menu bounds
 				bool widest = false;
 				if (getWidestItemIndex() == i) {
@@ -275,6 +275,29 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 			return false;
 		}
 	}
+}
+
+bool Menu::removeLastItem()
+{
+	// find index of last item
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	int index = -1;
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			index++;
+		} else {
+			break;
+		}
+	}
+
+	if (index < 0)
+		return false;
+	else {
+		// remove item
+		sf::Text* objToRemove = textObjs[index];
+		removeMenuItem(objToRemove);
+		return true;
+	}	
 }
 
 void Menu::draw(sf::RenderWindow& win)
@@ -317,7 +340,7 @@ void Menu::draw(sf::RenderWindow& win)
 		}
 	}
 
-	if (menuShown && menuBoundsShown && 
+	if (menuShown && menuBoundsShown &&
 		(type == STATIC || (type == DYNAMIC && bounds.y > paddingY * 2))) {
 		sf::Vector2f windowBounds = { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) };
 		if (outline.getPosition() != uiTools::cornerTypeToVector(dockingPosition, windowBounds)) {

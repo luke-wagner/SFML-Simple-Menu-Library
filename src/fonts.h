@@ -1,5 +1,5 @@
 #pragma once
 namespace fonts {
-	#include "fonts/arial.h"
+	#include "../res/fonts/arial.h"
 	//other fonts go here
 };

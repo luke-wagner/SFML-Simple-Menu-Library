@@ -177,6 +177,14 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Removes the last item in the textObjs array
+	*
+	*   @return true if removed sucessfully
+	*/
+	bool removeLastItem();
+
+	// ------------------------------------------------------
+	/**
 	* Draws all menu items to the window - only function that must be called EVERY frame.
 	* Also does some basic reformatting of objects in the menu
 	* so that they all remain within the bounds of the window.
