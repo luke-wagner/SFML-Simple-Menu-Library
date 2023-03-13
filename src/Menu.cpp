@@ -11,6 +11,7 @@
 #include <iostream>
 #include "menu.h"
 #include "uiTools.h"
+#include "fonts.h"
 
 Menu::Menu() {
 	// Set default values
@@ -20,7 +21,7 @@ Menu::Menu() {
 	setDockingPosition(DEFAULT_DOCKING_POSITION);
 	setTextOriginPoint(DEFAULT_TEXT_ORIGIN_POINT);
 	setBounds(0, 0);
-	setPadding(0, 0);
+	setPadding(DEFAULT_PADDING.x, DEFAULT_PADDING.y);
 	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
 	numElements = 0;
 	mustReformatElements = false;
@@ -34,7 +35,7 @@ Menu::Menu() {
 	backupFontObj = new sf::Font;
 	fonts.insert(std::make_pair(BACKUP_FONT_NAME, backupFontObj));
 
-	if (!backupFontObj->loadFromFile(BACKUP_FONT_NAME)) {
+	if (!backupFontObj->loadFromMemory(fonts::arial, fonts::arial_len)) {
 		std::cout << "ERROR: Error loading default Menu font\n";
 	}
 
@@ -172,6 +173,15 @@ void Menu::hideMenuBounds()
 	menuBoundsShown = false;
 }
 
+void Menu::toggleMenuBounds()
+{
+	if (menuBoundsShown) {
+		menuBoundsShown = false;
+	} else {
+		menuBoundsShown = true;
+	}
+}
+
 void Menu::showComponentOutlines()
 {
 	componentOutlinesShown = true;
@@ -180,6 +190,15 @@ void Menu::showComponentOutlines()
 void Menu::hideComponentOutlines()
 {
 	componentOutlinesShown = false;
+}
+
+void Menu::toggleComponentOutlines()
+{
+	if (componentOutlinesShown) {
+		componentOutlinesShown = false;
+	} else {
+		componentOutlinesShown = true;
+	}
 }
 
 void Menu::printSomething()

@@ -112,6 +112,12 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Toggles the menu bounds from being shown on/off
+	*/
+	void toggleMenuBounds();
+
+	// ------------------------------------------------------
+	/**
 	* Causes menu item outlines to be displayed to the window as part of Menu::draw()
 	*/
 	void showComponentOutlines();
@@ -121,6 +127,12 @@ public:
 	* Stops menu item outlines from being displayed to the window in Menu::draw()
 	*/
 	void hideComponentOutlines();
+
+	// ------------------------------------------------------
+	/**
+	* Toggles the component outlines from being shown on/off
+	*/
+	void toggleComponentOutlines();
 
 	// ======================================================
 	// Miscallaneous
@@ -181,6 +193,7 @@ private:
 	// formatting
 	const uiTools::cornerType DEFAULT_DOCKING_POSITION = uiTools::TOP_LEFT;
 	const uiTools::cornerType DEFAULT_TEXT_ORIGIN_POINT = uiTools::TOP_LEFT;
+	const sf::Vector2f DEFAULT_PADDING = { 25, 25 };
 	const int DEFAULT_COMPONENT_BUFFER = 10;
 
 	// misc
