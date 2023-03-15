@@ -15,21 +15,20 @@
 class Menu {
 
 public:
-	enum menuType { DYNAMIC, STATIC };
-
-	// Object arrays for storing and pulling UI elements
-	sf::Text* textObjs[30]; // #check - make private?
+	enum menuType { DYNAMIC, STATIC }; // #check - move outside of class?
 
 	sf::Text defaultTextObj;
 
 	// ======================================================
-	// Constructors
+	// Constructors + Destructor
 	/**
 	* Default constructor for the Menu class
 	*/
 	Menu();
 
 	// Add other constructors? #improve
+
+	~Menu();
 
 	// ======================================================
 	// Mutators
@@ -51,7 +50,8 @@ public:
 
 	// ------------------------------------------------------
 	/**
-	* Sets which corner to start drawing text objects at relative the menu
+	* Sets which corner to start drawing text objects at relative the menu.
+	* Only works for STATIC type menus.
 	*
 	*   @param corner - which corner to start drawing text objects at
 	*	@return true if changed succesfully
@@ -78,6 +78,14 @@ public:
 	*	@return true if changed succesfully
 	*/
 	bool setComponentBuffer(int newVal);
+
+	// ------------------------------------------------------
+	/**
+	* Sets the background color of the menu
+	*
+	*   @param color - the color to set to
+	*/
+	void setBackgroundColor(sf::Color color);
 
 	// ======================================================
 	// Appearance
@@ -136,11 +144,6 @@ public:
 
 	// ======================================================
 	// Miscallaneous
-
-	// only for testing #remove
-	void printSomething();
-
-	// ------------------------------------------------------
 	/**
 	* Adds new menu item relative to other existing items. Currently only supported for sf::Text objects.
 	* Creates new sf::Text object and stores it in textObjs[], will re-use font objects if possible
@@ -165,6 +168,16 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Looks for a menu item in textObjs[] with a matching string field.
+	* Returns a pointer to the first object that matches these descriptions
+	*
+	*   @param text - the string of the object we wish to find
+	*	@return pointer to the object if found; if not return nullptr
+	*/
+	sf::Text* findMenuItem(const std::string text);
+
+	// ------------------------------------------------------
+	/**
 	* Removes an item from the menu. Gets a pointer to the object to remove and deletes
 	* it from textObjs[] and frees up allocated memory. Important: if a pointer to this
 	* item was saved in addMenuItem(), it should be set to null, to prevent trying
@@ -185,6 +198,14 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Removes the first item in the textObjs array
+	*
+	*   @return true if removed sucessfully
+	*/
+	bool removeFirstItem();
+
+	// ------------------------------------------------------
+	/**
 	* Draws all menu items to the window - only function that must be called EVERY frame.
 	* Also does some basic reformatting of objects in the menu
 	* so that they all remain within the bounds of the window.
@@ -194,8 +215,6 @@ public:
 	void draw(sf::RenderWindow& win);
 
 private:
-	menuType type;	//either dynamic or static
-
 	// ------------------------------------------------------
 	// Constants
 	// formatting
@@ -206,9 +225,12 @@ private:
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj
+	// NOTE: To change deafult font: must also change constructors
 
 	// ------------------------------------------------------
 	// Variables
+	menuType type;	//either dynamic or static
+	bool initialized; //set to true at end of constructors
 	bool menuShown;	//when enabled, menu is drawn every frame to the window (false by default)
 	bool componentOutlinesShown;	//when enabled, draws outlines around UI elements to the screen
 	bool menuBoundsShown;	//draws an outline around the whole menu
@@ -226,10 +248,14 @@ private:
 	std::unordered_map<std::string, sf::Font*> fonts;
 	sf::Font* backupFontObj;	//used when user doesn't specify what font to use
 
+	sf::RectangleShape background; //the object for drawing the menu's background
 	sf::RectangleShape outline;	//the object for drawing the bounds of the menu
 
 	// misc
 	sf::Color backgroundColor;	//set to transparent by default
+
+	// object arrays for storing and pulling UI elements
+	sf::Text* textObjs[30];
 
 	// ------------------------------------------------------
 	// Functions
@@ -249,6 +275,16 @@ private:
 	*   @param y - the new height of the menu
 	*/
 	void setBounds(float x, float y);
+
+	// ------------------------------------------------------
+	/**
+	* Contains the operations for setting where to start drawing text objects at 
+	* relative the menu. Bypasses any validation (hence, private).
+	* Users should call public setTextOriginPoint() in their programs
+	*
+	*   @param corner - which corner to start drawing text objects at
+	*/
+	void setTextOriginPointPriv(uiTools::cornerType corner);
 
 	// ------------------------------------------------------
 	/**

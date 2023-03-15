@@ -14,12 +14,14 @@
 #include "fonts.h"
 
 Menu::Menu() {
+	initialized = false;
+
 	// Set default values
 	setType(DYNAMIC);
 
 	// formatting
 	setDockingPosition(DEFAULT_DOCKING_POSITION);
-	setTextOriginPoint(DEFAULT_TEXT_ORIGIN_POINT);
+	setTextOriginPointPriv(DEFAULT_TEXT_ORIGIN_POINT);
 	setBounds(0, 0);
 	setPadding(DEFAULT_PADDING.x, DEFAULT_PADDING.y);
 	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
@@ -42,6 +44,8 @@ Menu::Menu() {
 	defaultTextObj.setCharacterSize(20); // #check - make consts?
 	defaultTextObj.setFont(*backupFontObj);
 
+	background.setFillColor(sf::Color::Transparent);
+
 	outline.setFillColor(sf::Color::Transparent);
 	outline.setOutlineThickness(1);
 	outline.setOutlineColor(sf::Color::White);
@@ -50,12 +54,22 @@ Menu::Menu() {
 	menuShown = true;
 	componentOutlinesShown = false;
 	menuBoundsShown = false;
-	backgroundColor = sf::Color::Transparent;
+	setBackgroundColor(sf::Color::Transparent);
+
+	initialized = true;
+}
+
+Menu::~Menu()
+{
 }
 
 
 void Menu::setType(menuType type) {
-	this->type = type;
+	if (!initialized) {
+		type = type;
+	} else {
+		std::cout << "ERROR: trying to set type after menu has been initialized. (Menu::setType())\n";
+	}
 }
 
 bool Menu::setDockingPosition(uiTools::cornerType corner)
@@ -81,7 +95,7 @@ bool Menu::setDockingPosition(uiTools::cornerType corner)
 	}
 
 	if (type == DYNAMIC) {
-		setTextOriginPoint(corner);
+		setTextOriginPointPriv(corner);
 	}
 
 	if (numElements > 0) {
@@ -93,22 +107,13 @@ bool Menu::setDockingPosition(uiTools::cornerType corner)
 
 bool Menu::setTextOriginPoint(uiTools::cornerType corner)
 {
-	switch (corner) {
-	case uiTools::TOP_RIGHT:
-		textOriginPoint = uiTools::TOP_RIGHT;
-		break;
-	case uiTools::TOP_LEFT:
-		textOriginPoint = uiTools::TOP_LEFT;
-		break;
-	case uiTools::BOTTOM_LEFT:
-		textOriginPoint = uiTools::BOTTOM_LEFT;
-		break;
-	case uiTools::BOTTOM_RIGHT:
-		textOriginPoint = uiTools::BOTTOM_RIGHT;
-		break;
+	if (type == DYNAMIC) {
+		std::cout << "ERROR: setTextOriginPoint() should only be called on STATIC type menus.\n";
+		return false;
+	} else {
+		setTextOriginPointPriv(corner);
+		return true;
 	}
-
-	return true;
 }
 
 bool Menu::setPadding(float x, float y) {
@@ -151,6 +156,12 @@ bool Menu::setComponentBuffer(int newVal)
 		return true;
 	} else
 		return false;
+}
+
+void Menu::setBackgroundColor(sf::Color color)
+{
+	backgroundColor = color;
+	background.setFillColor(backgroundColor);
 }
 
 void Menu::showMenu()
@@ -201,17 +212,29 @@ void Menu::toggleComponentOutlines()
 	}
 }
 
-void Menu::printSomething()
-{
-	std::cout << "This is a line of text";
-}
-
 sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text) {
 	return menuAdditionOperations(win, text, defaultTextObj);
 }
 
 sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text, const sf::Text& textObj) {
 	return menuAdditionOperations(win, text, textObj);
+}
+
+sf::Text* Menu::findMenuItem(const std::string text)
+{
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			// check object's string field
+			if (textObjs[i]->getString() == text) {
+				return textObjs[i];
+			}
+		} else {
+			break;
+		}
+	}
+
+	return nullptr;
 }
 
 bool Menu::removeMenuItem(sf::Text* objToRemove)
@@ -300,12 +323,33 @@ bool Menu::removeLastItem()
 	}	
 }
 
+bool Menu::removeFirstItem()
+{
+	if (textObjs[0] != NULL) {
+		return removeMenuItem(textObjs[0]);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void Menu::draw(sf::RenderWindow& win)
 {
 	if (mustReformatElements) {
 		reformatElements(win); // #check
 		mustReformatElements = false;
 	}
+
+	sf::Vector2f windowBounds = { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) };
+	if (background.getPosition() != uiTools::cornerTypeToVector(dockingPosition, windowBounds)) {
+		// dockingPosition has changed; must adjust bakground and outline positions
+		background.setPosition(uiTools::cornerTypeToVector(dockingPosition, windowBounds));
+		outline.setPosition(uiTools::cornerTypeToVector(dockingPosition, windowBounds));
+	}
+
+	// draw background
+	if (type == STATIC || numElements > 0)
+		win.draw(background);
 
 	// text objects
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
@@ -342,11 +386,6 @@ void Menu::draw(sf::RenderWindow& win)
 
 	if (menuShown && menuBoundsShown &&
 		(type == STATIC || (type == DYNAMIC && bounds.y > paddingY * 2))) {
-		sf::Vector2f windowBounds = { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) };
-		if (outline.getPosition() != uiTools::cornerTypeToVector(dockingPosition, windowBounds)) {
-			// dockingPosition has changed; must adjust outline position
-			outline.setPosition(uiTools::cornerTypeToVector(dockingPosition, windowBounds));
-		}
 		win.draw(outline);
 	}
 }
@@ -379,9 +418,29 @@ void Menu::setBounds(float x, float y) {
 	bounds.x = x;
 	bounds.y = y;
 
-	// update outline object
+	// update background and outline objects
+	background.setSize(bounds);
+	background.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
 	outline.setSize(bounds);
 	outline.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
+}
+
+void Menu::setTextOriginPointPriv(uiTools::cornerType corner)
+{
+	switch (corner) {
+	case uiTools::TOP_RIGHT:
+		textOriginPoint = uiTools::TOP_RIGHT;
+		break;
+	case uiTools::TOP_LEFT:
+		textOriginPoint = uiTools::TOP_LEFT;
+		break;
+	case uiTools::BOTTOM_LEFT:
+		textOriginPoint = uiTools::BOTTOM_LEFT;
+		break;
+	case uiTools::BOTTOM_RIGHT:
+		textOriginPoint = uiTools::BOTTOM_RIGHT;
+		break;
+	}
 }
 
 void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
