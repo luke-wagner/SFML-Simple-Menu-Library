@@ -54,7 +54,7 @@ Menu mainMenu;
 
 ### Adding Menu Items
 
-You can add menu items to the menu using the `addMenuItem()` function. This function takes a reference to the window object as its first argument, followed by the mew menu item's text, and an optional `sf::Text` object as a template for the appearance of the menu item.
+You can add menu items to the menu using the `addMenuItem()` function. This function takes a reference to the window object as its first argument, followed by the new menu item's text, and an optional `sf::Text` object as a template for the appearance of the menu item.
 
 For example, to add an element with the text "Lives: 3" to the menu:
 
@@ -81,13 +81,13 @@ mainMenu.defaultTextObj.setCharacterSize(24);
 
 #### 2. Providing a Separate Text Object
 
-Alternatively, you can provide a separate sf::Text object as a template when adding a menu item. For example, to create a larger "New Game" item:
+Alternatively, you can provide a separate sf::Text object as a template when adding a menu item. For example, to create a larger score item:
 
 ```cpp
  //create new Text object with all the properties of defaultTextObj
 sf::Text largeText(mainMenu.defaultTextObj);
 largeText.setCharacterSize(36); //but change char size
-mainMenu.addMenuItem(window, "New Game", largeText);
+mainMenu.addMenuItem(window, "Score: 20", largeText);
 ```
 
 ### Customizing Menus
@@ -126,17 +126,17 @@ In this section, we'll walk you through an example that demonstrates how to crea
 #include "Menu.h"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Simple Menu Example");
-    Menu mainMenu;
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Example with Menus");
 
-    mainMenu.setType(Menu::STATIC);
+    Menu mainMenu;
+    mainMenu.setType(Menu::DYNAMIC);
     mainMenu.setDockingPosition(uiTools::TOP_LEFT);
     mainMenu.setPadding(50, 50);
     mainMenu.setComponentBuffer(20);
 
-    mainMenu.addMenuItem(window, "New Game");
-    mainMenu.addMenuItem(window, "Load Game");
-    mainMenu.addMenuItem(window, "Exit");
+    mainMenu.addMenuItem(window, "Score: 20");
+    mainMenu.addMenuItem(window, "Lives: 3");
+    mainMenu.addMenuItem(window, "Items: 4");
 
     mainMenu.showMenu();
 
@@ -163,19 +163,22 @@ int main() {
 #include <SFML/Graphics.hpp>
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Simple Menu Example");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Example with plain components");
 
     sf::Font font;
     font.loadFromFile("arial.ttf");
+    int paddingX = 50;
+    int paddingY = 50;
+    int componentBuffer = 20;
 
-    sf::Text newGame("New Game", font);
-    newGame.setPosition(50, 50);
+    sf::Text score("Score: 20", font, 20);
+    score.setPosition(50, 50);
 
-    sf::Text loadGame("Load Game", font);
-    loadGame.setPosition(50, 50 + newGame.getGlobalBounds().height + 20);
+    sf::Text lives("Lives: 3", font, 20);
+    lives.setPosition(50, 50 + score.getGlobalBounds().height + componentBuffer);
 
-    sf::Text exit("Exit", font);
-    exit.setPosition(50, 50 + newGame.getGlobalBounds().height + loadGame.getGlobalBounds().height + 40);
+    sf::Text items("Items: 4", font, 20);
+    items.setPosition(50, 50 + score.getGlobalBounds().height + lives.getGlobalBounds().height + componentBuffer * 2);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -186,15 +189,17 @@ int main() {
         }
 
         window.clear();
-        window.draw(newGame);
-        window.draw(loadGame);
-        window.draw(exit);
+        window.draw(score);
+        window.draw(lives);
+        window.draw(items);
         window.display();
     }
 
     return 0;
 }
 ```
+
+As you can see, using the `Menu` class simplifies the code and is easier to scale.
 
 ## Limitations
 
