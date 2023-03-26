@@ -222,6 +222,7 @@ private:
 	const uiTools::cornerType DEFAULT_TEXT_ORIGIN_POINT = uiTools::TOP_LEFT;
 	const sf::Vector2f DEFAULT_PADDING = { 25, 25 };
 	const int DEFAULT_COMPONENT_BUFFER = 10;
+	const int DEFAULT_CHAR_SIZE = 20;
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj

@@ -41,7 +41,7 @@ Menu::Menu() {
 		std::cout << "ERROR: Error loading default Menu font\n";
 	}
 
-	defaultTextObj.setCharacterSize(20); // #check - make consts?
+	defaultTextObj.setCharacterSize(DEFAULT_CHAR_SIZE);
 	defaultTextObj.setFont(*backupFontObj);
 
 	background.setFillColor(sf::Color::Transparent);
@@ -283,7 +283,7 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 
 				// delete object and reformat array
 				delete textObjs[i];
-				textObjs[i] = NULL;
+				textObjs[i] = nullptr;
 				numElements--;
 				reformatArray(textObjs, len);
 
@@ -497,24 +497,19 @@ void Menu::applyCompBufferDiff(int diff)
 void Menu::reformatElements(sf::RenderWindow& win)
 {
 	// Brute force method #improve
-	// Remove each item, creating copy as we go
-	// add each item back in using addMenuItem()
+	// Remove all menu items, storing copies in vector
+	std::vector<sf::Text*> copies;
+	int counter = 0;
+	while (textObjs[0] != NULL) {
+		sf::Text* copy = new sf::Text(*textObjs[0]);
+		removeMenuItem(textObjs[0]);
+		copies.push_back(copy);
+		counter++;
+	}
 
-	// #improve - implement a removeMenuItem() function
-	// temporary solution: reset menu properties before loop
-	numElements = 0;
-	setBounds(paddingX * 2, paddingY * 2); // not (0,0) because padding must be accounted for before adding items
-
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	for (int i = 0; i < len; i++) {
-		if (textObjs[i] != NULL) {
-			sf::Text copy = sf::Text(*textObjs[i]);
-			delete textObjs[i];
-			textObjs[i] = NULL;
-			addMenuItem(win, copy.getString(), copy);
-		} else {
-			break;
-		}
+	// Re-add all items
+	for (int i = 0; i < counter; i++) {
+		addMenuItem(win, copies[i]->getString(), *copies[i]);
 	}
 }
 
