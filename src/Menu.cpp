@@ -12,6 +12,7 @@
 #include "menu.h"
 #include "uiTools.h"
 #include "fonts.h"
+#include "roundedRect.h"
 
 Menu::Menu() {
 	initialized = false;
@@ -24,7 +25,6 @@ Menu::Menu() {
 	setTextOriginPointPriv(DEFAULT_TEXT_ORIGIN_POINT);
 	setBounds(0, 0);
 	setPadding(DEFAULT_PADDING.x, DEFAULT_PADDING.y);
-	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
 	numElements = 0;
 	mustReformatElements = false;
 
@@ -43,6 +43,8 @@ Menu::Menu() {
 
 	defaultTextObj.setCharacterSize(DEFAULT_CHAR_SIZE);
 	defaultTextObj.setFont(*backupFontObj);
+
+	componentOutlineObj.setFillColor(sf::Color::Blue); // #check
 
 	background.setFillColor(sf::Color::Transparent);
 
@@ -243,7 +245,7 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 		// trying to remove an object that may have already been deleted
 		return false;
 	}
-
+	
 	int len = sizeof(textObjs) / sizeof(textObjs[0]);
 	for (int i = 0; i < len; i++) {
 		if (textObjs[i] != NULL) {
@@ -276,7 +278,7 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 					widest = true;
 				}
 				if (numElements > 1) {
-					setBounds(bounds.x, bounds.y - textObjs[i]->getCharacterSize() - componentBuffer);
+					setBounds(bounds.x, bounds.y - objToRemove->getCharacterSize() - componentBuffer);
 				} else {
 					setBounds(paddingX * 2, paddingY * 2);
 				}
@@ -288,8 +290,10 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 				reformatArray(textObjs, len);
 
 				if (widest && textObjs[getWidestItemIndex()] != NULL) {
-					float newWidth = textObjs[getWidestItemIndex()]->getLocalBounds().width;
-					setBounds(newWidth + paddingX * 2, bounds.y);
+					sf::Text* widestItemPostDeletion = textObjs[getWidestItemIndex()];
+					float newWidth = widestItemPostDeletion->getLocalBounds().width + widestItemPostDeletion->getCharacterSize() *
+						COMP_OUTLINE_PADDING / 2 + paddingX * 2;
+					setBounds(newWidth, bounds.y);
 				}
 
 				return true;
@@ -373,11 +377,51 @@ void Menu::draw(sf::RenderWindow& win)
 				}
 			}
 
-			sf::Text t = *textObjs[i];
 			if (menuShown) {
-				win.draw(t);
-				if (componentOutlinesShown)
-					uiTools::drawOutline(win, t, sf::Color::White);
+				if (componentOutlinesShown) {
+					//uiTools::drawOutline(win, t, sf::Color::White); #check
+
+					//scale componentOutlineObj to item size - must use copy to scale bevels properly
+					sf::Vector2f itemPos = textObjs[i]->getPosition();
+					float paddingAmountX = COMP_OUTLINE_PADDING * textObjs[i]->getCharacterSize();
+					float paddingAmountY = COMP_OUTLINE_PADDING * textObjs[i]->getCharacterSize();
+					sf::Vector2f rectSize = { textObjs[i]->getLocalBounds().width + paddingAmountX,
+						static_cast<float>(textObjs[i]->getCharacterSize()) + paddingAmountY };
+
+					float offsetX;
+					float offsetY;
+					switch (dockingPosition) {
+					case uiTools::TOP_LEFT:
+						offsetX = paddingAmountX / 2;
+						offsetY = paddingAmountY / 2;
+						break;
+					case uiTools::BOTTOM_LEFT:
+						offsetX = paddingAmountX / 2;
+						offsetY = (paddingAmountY / 2) * (-1);
+						break;
+					case uiTools::TOP_RIGHT:
+						offsetX = (paddingAmountX / 2) * (-1);
+						offsetY = paddingAmountY / 2;
+						break;
+					case uiTools::BOTTOM_RIGHT:
+						offsetX = (paddingAmountX / 2) * (-1);
+						offsetY = (paddingAmountY / 2) * (-1);
+						break;
+					}
+					sf::Vector2f rectOrigin = uiTools::cornerTypeToVector(textOriginPoint, { textObjs[i]->getLocalBounds().width + paddingAmountX,
+						static_cast<float>(textObjs[i]->getCharacterSize()) + paddingAmountY });
+					rectOrigin.x += offsetX;
+					rectOrigin.y += offsetY;
+					
+					// configure rounded rect
+					sf::ConvexShape copy = createRoundedRect(rectSize, componentOutlineObj.getFillColor(), componentOutlineObj.getOutlineThickness(), componentOutlineObj.getOutlineColor());
+					copy.setOrigin(rectOrigin);
+					copy.setPosition(itemPos);
+
+					//draw shape
+					win.draw(copy);
+				}
+				win.draw(*textObjs[i]);
 			}
 		} else {
 			break;
@@ -592,12 +636,12 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 		float newBoundsY = 0;
 
 		// if new element's width is greater than the bounds of the menu, change bounds.x
-		if (addedItemBounds.width + paddingX * 2 > bounds.x) {
-			newBoundsX = addedItemBounds.width + paddingX * 2;
+		if (addedItemBounds.width + paddingX * 2 + addedItemHeight * COMP_OUTLINE_PADDING / 2 > bounds.x ) {
+			newBoundsX = addedItemBounds.width + paddingX * 2 + addedItemHeight * COMP_OUTLINE_PADDING / 2;
 		}
 		// change bounds.y
 		if (numElements == 0) {
-			newBoundsY = bounds.y + addedItemHeight;
+			newBoundsY = bounds.y + addedItemHeight + addedItemHeight * COMP_OUTLINE_PADDING / 2;
 		} else {
 			newBoundsY = bounds.y + addedItemHeight + componentBuffer;
 		}

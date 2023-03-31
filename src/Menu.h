@@ -18,6 +18,7 @@ public:
 	enum menuType { DYNAMIC, STATIC }; // #check - move outside of class?
 
 	sf::Text defaultTextObj;
+	sf::ConvexShape componentOutlineObj;
 
 	// ======================================================
 	// Constructors + Destructor
@@ -223,6 +224,7 @@ private:
 	const sf::Vector2f DEFAULT_PADDING = { 25, 25 };
 	const int DEFAULT_COMPONENT_BUFFER = 10;
 	const int DEFAULT_CHAR_SIZE = 20;
+	const float COMP_OUTLINE_PADDING = 1;	//percentage relative to component height
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj
