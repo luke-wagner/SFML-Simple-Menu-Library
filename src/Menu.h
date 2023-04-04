@@ -281,16 +281,6 @@ private:
 
 	// ------------------------------------------------------
 	/**
-	* Contains the operations for setting where to start drawing text objects at 
-	* relative the menu. Bypasses any validation (hence, private).
-	* Users should call public setTextOriginPoint() in their programs
-	*
-	*   @param corner - which corner to start drawing text objects at
-	*/
-	void setTextOriginPointPriv(uiTools::cornerType corner);
-
-	// ------------------------------------------------------
-	/**
 	* Reformats existing elements to use new padding; called in setPadding()
 	*
 	*   @param diffPaddingX - the change in horizontal padding

@@ -22,7 +22,7 @@ Menu::Menu() {
 
 	// formatting
 	setDockingPosition(DEFAULT_DOCKING_POSITION);
-	setTextOriginPointPriv(DEFAULT_TEXT_ORIGIN_POINT);
+	textOriginPoint = DEFAULT_TEXT_ORIGIN_POINT;
 	setBounds(0, 0);
 	setPadding(DEFAULT_PADDING.x, DEFAULT_PADDING.y);
 	numElements = 0;
@@ -81,23 +81,10 @@ bool Menu::setDockingPosition(uiTools::cornerType corner)
 		return true; // #check
 	}
 
-	switch (corner) {
-	case uiTools::TOP_RIGHT:
-		dockingPosition = uiTools::TOP_RIGHT;
-		break;
-	case uiTools::TOP_LEFT:
-		dockingPosition = uiTools::TOP_LEFT;
-		break;
-	case uiTools::BOTTOM_LEFT:
-		dockingPosition = uiTools::BOTTOM_LEFT;
-		break;
-	case uiTools::BOTTOM_RIGHT:
-		dockingPosition = uiTools::BOTTOM_RIGHT;
-		break;
-	}
+	dockingPosition = corner;
 
 	if (type == DYNAMIC) {
-		setTextOriginPointPriv(corner);
+		textOriginPoint = corner;
 	}
 
 	if (numElements > 0) {
@@ -113,7 +100,7 @@ bool Menu::setTextOriginPoint(uiTools::cornerType corner)
 		std::cout << "ERROR: setTextOriginPoint() should only be called on STATIC type menus.\n";
 		return false;
 	} else {
-		setTextOriginPointPriv(corner);
+		textOriginPoint = corner;
 		return true;
 	}
 }
@@ -467,24 +454,6 @@ void Menu::setBounds(float x, float y) {
 	background.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
 	outline.setSize(bounds);
 	outline.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
-}
-
-void Menu::setTextOriginPointPriv(uiTools::cornerType corner)
-{
-	switch (corner) {
-	case uiTools::TOP_RIGHT:
-		textOriginPoint = uiTools::TOP_RIGHT;
-		break;
-	case uiTools::TOP_LEFT:
-		textOriginPoint = uiTools::TOP_LEFT;
-		break;
-	case uiTools::BOTTOM_LEFT:
-		textOriginPoint = uiTools::BOTTOM_LEFT;
-		break;
-	case uiTools::BOTTOM_RIGHT:
-		textOriginPoint = uiTools::BOTTOM_RIGHT;
-		break;
-	}
 }
 
 void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
