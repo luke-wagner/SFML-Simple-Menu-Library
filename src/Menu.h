@@ -319,16 +319,6 @@ private:
 
 	// ------------------------------------------------------
 	/**
-	* Contains most of the functionality for Menu::addMenuItem()
-	*
-	*   @param win - a reference to the window object
-	*	@param text - what the added text object should display
-	*	@param objToUse - the sf::Text object to use as a template for formatting
-	*/
-	sf::Text* menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse);
-
-	// ------------------------------------------------------
-	/**
 	* Gets the index of the last non-null entry in the textObjs array
 	*
 	*   @return int - the index of the sf::Text object in textObjs[]
@@ -343,4 +333,63 @@ private:
 	*	@return int - the index of the item
 	*/
 	int getWidestItemIndex();
+
+	// ------------------------------------------------------
+	// Helper Functions
+	/**
+	* Contains most of the functionality for Menu::addMenuItem()
+	*
+	*   @param win - a reference to the window object
+	*	@param text - what the added text object should display
+	*	@param objToUse - the sf::Text object to use as a template for formatting
+	*/
+	sf::Text* menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse);
+
+	// ------------------------------------------------------
+	/**
+	* Reformats existing elements to use new padding; called in setPadding()
+	*
+	*   @param diffPaddingX - the change in horizontal padding
+	*   @param diffPadingY - the change in vertical padding
+	*/
+	void applyPaddingDiff(float diffPaddingX, float diffPaddingY);
+
+	// ------------------------------------------------------
+	/**
+	* Reformats existing elements to use the new component buffer; called in setCompBuffer()
+	*
+	*   @param diff - the new value versus the old one
+	*/
+	void applyCompBufferDiff(int diff);
+
+	/**
+	* Helper for menuAdditionOperations(). Adds a new text object to the textObjs array. 
+	* Calls default constructor and does not change any of the new item's properties.
+	*   @param objToUse - the text object to be added.
+	*   @param index - reference to the index where the text object is added.
+	*   @return pointer to the added text object or nullptr if the array is full.
+	*/
+	sf::Text* addTextObj(const sf::Text& objToUse, int& index);
+
+	/**
+	* Helper for menuAdditionOperations(). Calculates the position of the text object based on the last element added.
+	*   @param lastElementAdded - pointer to the last added text object or nullptr if there is no previous element.
+	*   @param win - Reference to the RenderWindow object.
+	*   @return sf::Vector2f containing the calculated position of the text object.
+	*/
+	sf::Vector2f calculateTextObjPosition(sf::Text* lastElementAdded, const sf::RenderWindow& win);
+
+	/**
+	* Helper for menuAdditionOperations(). Moves previous elements up by one "space" when 
+	* dockingPosition is BOTTOM_LEFT or BOTTOM_RIGHT.
+	*   @param index - the index of the current added text object in the textObjs array.
+	*   @param win - reference to the RenderWindow object.
+	*/
+	void movePreviousElements(int index, const sf::RenderWindow& win);
+
+	/**
+	* Helper for menuAdditionOperations(). Updates the menu bounds based on the added item.
+	*   @param addedItem - pointer to the recently added text object.
+	*/
+	void updateBounds(const sf::Text* addedItem, int addedItemHeight);
 };

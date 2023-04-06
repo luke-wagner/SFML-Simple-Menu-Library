@@ -538,92 +538,6 @@ void Menu::reformatArray(sf::Text* array[], int len)
 	}
 }
 
-sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {
-	// loop over textObjs
-	bool foundPlace = false;
-	int index = 0;
-
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	for (int x = 0; x < len; x++) {
-		if (!foundPlace) {
-			if (textObjs[x] == NULL) {
-				// add object and save its index
-				textObjs[x] = new sf::Text(objToUse);
-				foundPlace = true;
-				index = x;
-			}
-		} else {
-			break;
-		}
-	}
-
-	if (foundPlace) {
-		sf::Text* addedItem = textObjs[index];
-		addedItem->setString(text);
-
-		// get useful properties
-		int addedItemHeight = addedItem->getCharacterSize();
-
-		// Alignment
-		uiTools::setObjectOrigin(*addedItem, textOriginPoint); // must be done after string property is set
-
-		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
-			// set new obj position relative to dockingPosition and other elements
-			sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-
-			sf::Text* lastElementAdded = NULL;
-			if (index >= 1) {
-				lastElementAdded = textObjs[index - 1];
-			}
-			sf::Vector2f objDrawPosition;
-			if (lastElementAdded != NULL) {
-				objDrawPosition = { innerCorner.x, lastElementAdded->getPosition().y + lastElementAdded->getCharacterSize() + componentBuffer };
-			} else {
-				objDrawPosition = { innerCorner.x, innerCorner.y };
-			}
-			addedItem->setPosition(objDrawPosition);
-		} else {
-			// set new element at same spot every time and move previous elements up by one "space"
-			sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
-			sf::Vector2f innerCorner = getInnerCorner(outerCorner);
-			addedItem->setPosition(innerCorner);
-
-			// move previous elements up
-			int counter = 0;
-			for (int i = index - 1; i >= 0; i--) {
-				sf::Text* lastElementAdded = textObjs[i + 1];
-				float newY = lastElementAdded->getPosition().y - lastElementAdded->getCharacterSize() - componentBuffer;
-				textObjs[i]->setPosition(textObjs[i]->getPosition().x, newY);
-				counter++;
-			}
-		}
-
-		// Resize menu bounds
-		sf::FloatRect addedItemBounds = addedItem->getLocalBounds();
-		float newBoundsX = bounds.x;
-		float newBoundsY = 0;
-
-		// if new element's width is greater than the bounds of the menu, change bounds.x
-		if (addedItemBounds.width + paddingX * 2 + addedItemHeight * COMP_OUTLINE_PADDING / 2 > bounds.x ) {
-			newBoundsX = addedItemBounds.width + paddingX * 2 + addedItemHeight * COMP_OUTLINE_PADDING / 2;
-		}
-		// change bounds.y
-		if (numElements == 0) {
-			newBoundsY = bounds.y + addedItemHeight + addedItemHeight * COMP_OUTLINE_PADDING / 2;
-		} else {
-			newBoundsY = bounds.y + addedItemHeight + componentBuffer;
-		}
-		setBounds(newBoundsX, newBoundsY);
-
-		numElements++;
-		return addedItem;
-	} else {
-		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
-		return nullptr;
-	}
-}
-
 int Menu::getLastIndex() {
 	// can be optimized? - #check
 	// stepwise solution
@@ -658,4 +572,140 @@ int Menu::getWidestItemIndex()
 	}
 
 	return index;
+}
+
+sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {
+	int index = -1;
+	sf::Text* addedItem = addTextObj(objToUse, index); // Add the new text object and store its index
+
+	if (addedItem) {
+		// set added item properties
+		addedItem->setString(text);
+		int addedItemHeight = addedItem->getCharacterSize();
+		uiTools::setObjectOrigin(*addedItem, textOriginPoint);
+
+		// get last element added
+		sf::Text* lastElementAdded = nullptr;
+			if (index >= 1) {
+				lastElementAdded = textObjs[index - 1];
+			}
+
+		// set position of added item and/or move previous menu items based on lastElementAdded
+		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
+			addedItem->setPosition(calculateTextObjPosition(lastElementAdded, win));
+		} else {
+			//using nullptr here means calculateTextObjPosition() will return the menu's inner corner
+			addedItem->setPosition(calculateTextObjPosition(nullptr, win));
+			movePreviousElements(index, win);
+		}
+
+		updateBounds(addedItem, addedItemHeight); // update menu bounds
+
+		numElements++;
+		return addedItem;
+	} else {
+		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
+		return nullptr;
+	}
+}
+
+void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
+	// text objects
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	for (int i = 0; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			sf::Vector2f objPosition = textObjs[i]->getPosition();
+			switch (dockingPosition) {
+			case uiTools::TOP_RIGHT:
+				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y + diffPaddingY);
+				objPosition = textObjs[i]->getPosition();
+				break;
+			case uiTools::TOP_LEFT:
+				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y + diffPaddingY);
+				break;
+			case uiTools::BOTTOM_LEFT:
+				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y - diffPaddingY);
+				break;
+			case uiTools::BOTTOM_RIGHT:
+				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y - diffPaddingY);
+				break;
+			}
+		}
+	}
+}
+
+void Menu::applyCompBufferDiff(int diff) {
+	// text objects
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	int counter = 1;
+	for (int i = 1; i < len; i++) {
+		if (textObjs[i] != NULL) {
+			counter++;
+			sf::Vector2f currentPos = textObjs[i]->getPosition();
+
+			if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
+				textObjs[i]->setPosition(currentPos.x, currentPos.y + i * diff);
+			}
+		} else {
+			if (dockingPosition == uiTools::BOTTOM_LEFT || dockingPosition == uiTools::BOTTOM_RIGHT) {
+				for (int i = counter - 1; i >= 0; i--) {
+					sf::Vector2f currentPos = textObjs[i]->getPosition();
+					textObjs[i]->setPosition(currentPos.x, currentPos.y - (counter - i - 1) * diff);
+		}
+	}
+
+			break;
+}
+	}
+}
+
+sf::Text* Menu::addTextObj(const sf::Text& objToUse, int& index) {
+	int len = sizeof(textObjs) / sizeof(textObjs[0]);
+	for (int x = 0; x < len; x++) {
+		if (textObjs[x] == NULL) {
+			textObjs[x] = new sf::Text(objToUse);
+			index = x;
+			return textObjs[x];
+			}
+	}
+	return nullptr;
+}
+
+sf::Vector2f Menu::calculateTextObjPosition(sf::Text* lastElementAdded, const sf::RenderWindow& win) {
+	sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
+	sf::Vector2f innerCorner = getInnerCorner(outerCorner);
+
+	if (lastElementAdded != nullptr) {
+		return { innerCorner.x, lastElementAdded->getPosition().y + lastElementAdded->getCharacterSize() + componentBuffer };
+		} else {
+		return innerCorner;
+		}
+	}
+
+void Menu::movePreviousElements(int index, const sf::RenderWindow& win) {
+	sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
+	sf::Vector2f innerCorner = getInnerCorner(outerCorner);
+	textObjs[index]->setPosition(innerCorner);
+
+	for (int i = index - 1; i >= 0; i--) {
+		sf::Text* lastElementAdded = textObjs[i + 1];
+		float newY = lastElementAdded->getPosition().y - lastElementAdded->getCharacterSize() - componentBuffer;
+		textObjs[i]->setPosition(textObjs[i]->getPosition().x, newY);
+	}
+}
+
+void Menu::updateBounds(const sf::Text* addedItem, int addedItemHeight) {
+	sf::FloatRect addedItemBounds = addedItem->getLocalBounds();
+	float newBoundsX = bounds.x;
+	float newBoundsY = 0;
+
+	if (addedItemBounds.width + paddingX * 2 + addedItemHeight * compOutlinePadding / 2 > bounds.x) {
+		newBoundsX = addedItemBounds.width + paddingX * 2 + addedItemHeight * compOutlinePadding / 2;
+	}
+	if (numElements == 0) {
+		newBoundsY = bounds.y + addedItemHeight + addedItemHeight * compOutlinePadding / 2;
+	} else {
+		newBoundsY = bounds.y + addedItemHeight + componentBuffer;
+	}
+	setBounds(newBoundsX, newBoundsY);
 }
