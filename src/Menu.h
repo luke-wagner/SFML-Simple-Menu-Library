@@ -82,6 +82,15 @@ public:
 
 	// ------------------------------------------------------
 	/**
+	* Sets the spacing between menu elements and the edges of their backgrounds
+	*
+	*   @param newVal - the new padding value
+	*	@return true if changed succesfully
+	*/
+	bool setCompOutlinePadding(float newVal);
+
+	// ------------------------------------------------------
+	/**
 	* Sets the background color of the menu
 	*
 	*   @param color - the color to set to
@@ -224,7 +233,7 @@ private:
 	const sf::Vector2f DEFAULT_PADDING = { 25, 25 };
 	const int DEFAULT_COMPONENT_BUFFER = 10;
 	const int DEFAULT_CHAR_SIZE = 20;
-	const float COMP_OUTLINE_PADDING = 1;	//percentage relative to component height
+	const float DEFAULT_COMP_OUTLINE_PADDING = 1;	//percentage relative to component height
 
 	// misc
 	const std::string BACKUP_FONT_NAME = "arial.ttf"; // used for creating backupFontObj
@@ -245,6 +254,7 @@ private:
 	float paddingX;	//amount of space between edge of menu and start of UI
 	float paddingY;	//amount of space between edge of menu and start of UI elements
 	int componentBuffer;	//space between menu components
+	float compOutlinePadding;	//space between menu components and their outline objects
 	int numElements;	//number of total menu items
 	bool mustReformatElements;	//if true, menu items are reformatted at start of draw()
 

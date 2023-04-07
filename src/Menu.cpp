@@ -25,6 +25,8 @@ Menu::Menu() {
 	textOriginPoint = DEFAULT_TEXT_ORIGIN_POINT;
 	setBounds(0, 0);
 	setPadding(DEFAULT_PADDING.x, DEFAULT_PADDING.y);
+	setComponentBuffer(DEFAULT_COMPONENT_BUFFER);
+	setCompOutlinePadding(DEFAULT_COMP_OUTLINE_PADDING);
 	numElements = 0;
 	mustReformatElements = false;
 
@@ -145,6 +147,17 @@ bool Menu::setComponentBuffer(int newVal)
 		return true;
 	} else
 		return false;
+}
+
+bool Menu::setCompOutlinePadding(float newVal)
+{
+	// data validation #check
+	compOutlinePadding = newVal;
+
+	if (numElements > 0)
+		mustReformatElements = true; //#check
+
+	return true;
 }
 
 void Menu::setBackgroundColor(sf::Color color)
@@ -279,7 +292,7 @@ bool Menu::removeMenuItem(sf::Text* objToRemove)
 				if (widest && textObjs[getWidestItemIndex()] != NULL) {
 					sf::Text* widestItemPostDeletion = textObjs[getWidestItemIndex()];
 					float newWidth = widestItemPostDeletion->getLocalBounds().width + widestItemPostDeletion->getCharacterSize() *
-						COMP_OUTLINE_PADDING / 2 + paddingX * 2;
+						compOutlinePadding / 2 + paddingX * 2;
 					setBounds(newWidth, bounds.y);
 				}
 
@@ -370,8 +383,8 @@ void Menu::draw(sf::RenderWindow& win)
 
 					//scale componentOutlineObj to item size - must use copy to scale bevels properly
 					sf::Vector2f itemPos = textObjs[i]->getPosition();
-					float paddingAmountX = COMP_OUTLINE_PADDING * textObjs[i]->getCharacterSize();
-					float paddingAmountY = COMP_OUTLINE_PADDING * textObjs[i]->getCharacterSize();
+					float paddingAmountX = compOutlinePadding * textObjs[i]->getCharacterSize();
+					float paddingAmountY = compOutlinePadding * textObjs[i]->getCharacterSize();
 					sf::Vector2f rectSize = { textObjs[i]->getLocalBounds().width + paddingAmountX,
 						static_cast<float>(textObjs[i]->getCharacterSize()) + paddingAmountY };
 
@@ -456,57 +469,6 @@ void Menu::setBounds(float x, float y) {
 	outline.setOrigin(uiTools::cornerTypeToVector(dockingPosition, bounds));
 }
 
-void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
-	// text objects
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	for (int i = 0; i < len; i++) {
-		if (textObjs[i] != NULL) {
-			sf::Vector2f objPosition = textObjs[i]->getPosition();
-			switch (dockingPosition) {
-			case uiTools::TOP_RIGHT:
-				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y + diffPaddingY);
-				objPosition = textObjs[i]->getPosition();
-				break;
-			case uiTools::TOP_LEFT:
-				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y + diffPaddingY);
-				break;
-			case uiTools::BOTTOM_LEFT:
-				textObjs[i]->setPosition(objPosition.x + diffPaddingX, objPosition.y - diffPaddingY);
-				break;
-			case uiTools::BOTTOM_RIGHT:
-				textObjs[i]->setPosition(objPosition.x - diffPaddingX, objPosition.y - diffPaddingY);
-				break;
-			}
-		}
-	}
-}
-
-void Menu::applyCompBufferDiff(int diff)
-{
-	// text objects
-	int len = sizeof(textObjs) / sizeof(textObjs[0]);
-	int counter = 1;
-	for (int i = 1; i < len; i++) {
-		if (textObjs[i] != NULL) {
-			counter++;
-			sf::Vector2f currentPos = textObjs[i]->getPosition();
-
-			if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
-				textObjs[i]->setPosition(currentPos.x, currentPos.y + i * diff);
-			}
-		} else {
-			if (dockingPosition == uiTools::BOTTOM_LEFT || dockingPosition == uiTools::BOTTOM_RIGHT) {
-				for (int i = counter - 1; i >= 0; i--) {
-					sf::Vector2f currentPos = textObjs[i]->getPosition();
-					textObjs[i]->setPosition(currentPos.x, currentPos.y - (counter - i - 1) * diff);
-				}
-			}
-
-			break;
-		}
-	}
-}
-
 void Menu::reformatElements(sf::RenderWindow& win)
 {
 	// Brute force method #improve
@@ -586,9 +548,9 @@ sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, 
 
 		// get last element added
 		sf::Text* lastElementAdded = nullptr;
-			if (index >= 1) {
-				lastElementAdded = textObjs[index - 1];
-			}
+		if (index >= 1) {
+			lastElementAdded = textObjs[index - 1];
+		}
 
 		// set position of added item and/or move previous menu items based on lastElementAdded
 		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
@@ -651,11 +613,11 @@ void Menu::applyCompBufferDiff(int diff) {
 				for (int i = counter - 1; i >= 0; i--) {
 					sf::Vector2f currentPos = textObjs[i]->getPosition();
 					textObjs[i]->setPosition(currentPos.x, currentPos.y - (counter - i - 1) * diff);
-		}
-	}
+				}
+			}
 
 			break;
-}
+		}
 	}
 }
 
@@ -666,7 +628,7 @@ sf::Text* Menu::addTextObj(const sf::Text& objToUse, int& index) {
 			textObjs[x] = new sf::Text(objToUse);
 			index = x;
 			return textObjs[x];
-			}
+		}
 	}
 	return nullptr;
 }
@@ -677,10 +639,10 @@ sf::Vector2f Menu::calculateTextObjPosition(sf::Text* lastElementAdded, const sf
 
 	if (lastElementAdded != nullptr) {
 		return { innerCorner.x, lastElementAdded->getPosition().y + lastElementAdded->getCharacterSize() + componentBuffer };
-		} else {
+	} else {
 		return innerCorner;
-		}
 	}
+}
 
 void Menu::movePreviousElements(int index, const sf::RenderWindow& win) {
 	sf::Vector2f outerCorner = uiTools::cornerTypeToVector(dockingPosition, { static_cast<float>(win.getSize().x), static_cast<float>(win.getSize().y) });
