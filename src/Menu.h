@@ -281,23 +281,6 @@ private:
 
 	// ------------------------------------------------------
 	/**
-	* Reformats existing elements to use new padding; called in setPadding()
-	*
-	*   @param diffPaddingX - the change in horizontal padding
-	*   @param diffPadingY - the change in vertical padding
-	*/
-	void applyPaddingDiff(float diffPaddingX, float diffPaddingY);
-
-	// ------------------------------------------------------
-	/**
-	* Reformats existing elements to use the new component buffer; called in setCompBuffer()
-	*
-	*   @param diff - the new value versus the old one
-	*/
-	void applyCompBufferDiff(int diff);
-
-	// ------------------------------------------------------
-	/**
 	* Important: INEFFICIENT. Reformats elements within the menu by deleting
 	* each menu item and readding it then formatting the menu again.
 	* Essentially "recreates" the menu
