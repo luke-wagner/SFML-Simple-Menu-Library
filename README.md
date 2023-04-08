@@ -45,9 +45,15 @@ Configuring your project to use this menu library is very similar to the process
 
 ## Usage
 
+### Include Header File
+
+```cpp
+#include "Menu.h"
+```
+
 ### Creating a Menu
 
-It's as simple as creating a `Menu` object
+Then it's as simple as creating a `Menu` object
 ```cpp
 Menu mainMenu;
 ```
