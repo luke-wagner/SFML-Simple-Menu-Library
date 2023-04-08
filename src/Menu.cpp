@@ -214,12 +214,41 @@ void Menu::toggleComponentOutlines()
 	}
 }
 
-sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text) {
-	return menuAdditionOperations(win, text, defaultTextObj);
-}
+sf::Text* Menu::addMenuItem(sf::RenderWindow& win, const std::string text, const sf::Text* textObj = nullptr) {
+	const sf::Text* objToUse = textObj ? textObj : &defaultTextObj; //uses textObj if provided, otherwise defaultTextObj
 
-sf::Text* Menu::addMenuItem(sf::RenderWindow& win, std::string text, const sf::Text& textObj) {
-	return menuAdditionOperations(win, text, textObj);
+	int index = -1;
+	sf::Text* addedItem = addTextObj(*objToUse, index); // Add the new text object and store its index
+
+	if (addedItem) {
+		// set added item properties
+		addedItem->setString(text);
+		int addedItemHeight = addedItem->getCharacterSize();
+		uiTools::setObjectOrigin(*addedItem, textOriginPoint);
+
+		// get last element added
+		sf::Text* lastElementAdded = nullptr;
+		if (index >= 1) {
+			lastElementAdded = textObjs[index - 1];
+		}
+
+		// set position of added item and/or move previous menu items based on lastElementAdded
+		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
+			addedItem->setPosition(calculateTextObjPosition(lastElementAdded, win));
+		} else {
+			//using nullptr here means calculateTextObjPosition() will return the menu's inner corner
+			addedItem->setPosition(calculateTextObjPosition(nullptr, win));
+			movePreviousElements(index, win);
+		}
+
+		updateBounds(addedItem, addedItemHeight); // update menu bounds
+
+		numElements++;
+		return addedItem;
+	} else {
+		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
+		return nullptr;
+	}
 }
 
 sf::Text* Menu::findMenuItem(const std::string text)
@@ -484,7 +513,7 @@ void Menu::reformatElements(sf::RenderWindow& win)
 
 	// Re-add all items
 	for (int i = 0; i < counter; i++) {
-		addMenuItem(win, copies[i]->getString(), *copies[i]);
+		addMenuItem(win, copies[i]->getString(), copies[i]);
 	}
 }
 
@@ -534,41 +563,6 @@ int Menu::getWidestItemIndex()
 	}
 
 	return index;
-}
-
-sf::Text* Menu::menuAdditionOperations(sf::RenderWindow& win, std::string text, const sf::Text& objToUse) {
-	int index = -1;
-	sf::Text* addedItem = addTextObj(objToUse, index); // Add the new text object and store its index
-
-	if (addedItem) {
-		// set added item properties
-		addedItem->setString(text);
-		int addedItemHeight = addedItem->getCharacterSize();
-		uiTools::setObjectOrigin(*addedItem, textOriginPoint);
-
-		// get last element added
-		sf::Text* lastElementAdded = nullptr;
-		if (index >= 1) {
-			lastElementAdded = textObjs[index - 1];
-		}
-
-		// set position of added item and/or move previous menu items based on lastElementAdded
-		if (dockingPosition == uiTools::TOP_LEFT || dockingPosition == uiTools::TOP_RIGHT) {
-			addedItem->setPosition(calculateTextObjPosition(lastElementAdded, win));
-		} else {
-			//using nullptr here means calculateTextObjPosition() will return the menu's inner corner
-			addedItem->setPosition(calculateTextObjPosition(nullptr, win));
-			movePreviousElements(index, win);
-		}
-
-		updateBounds(addedItem, addedItemHeight); // update menu bounds
-
-		numElements++;
-		return addedItem;
-	} else {
-		std::cout << "ERROR: Not able to add menu item. Maximum elements already added.\n";
-		return nullptr;
-	}
 }
 
 void Menu::applyPaddingDiff(float diffPaddingX, float diffPaddingY) {
