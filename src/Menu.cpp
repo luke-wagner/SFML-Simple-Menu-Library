@@ -214,7 +214,7 @@ void Menu::toggleComponentOutlines()
 	}
 }
 
-sf::Text* Menu::addMenuItem(sf::RenderWindow& win, const std::string text, const sf::Text* textObj = nullptr) {
+sf::Text* Menu::addMenuItem(sf::RenderWindow& win, const std::string text, const sf::Text* textObj) {
 	const sf::Text* objToUse = textObj ? textObj : &defaultTextObj; //uses textObj if provided, otherwise defaultTextObj
 
 	int index = -1;
