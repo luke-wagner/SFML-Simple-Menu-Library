@@ -137,17 +137,18 @@ In this section, we'll walk you through an example that demonstrates how to crea
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Example with Menus");
 
+    // create menu object
     Menu mainMenu;
-    mainMenu.setType(Menu::DYNAMIC);
+
+    // set some of its properties
     mainMenu.setDockingPosition(uiTools::TOP_LEFT);
     mainMenu.setPadding(50, 50);
     mainMenu.setComponentBuffer(20);
 
+    // add menu items
     mainMenu.addMenuItem(window, "Score: 20");
     mainMenu.addMenuItem(window, "Lives: 3");
     mainMenu.addMenuItem(window, "Items: 4");
-
-    mainMenu.showMenu();
 
     while (window.isOpen()) {
         sf::Event event;
@@ -158,7 +159,10 @@ int main() {
         }
 
         window.clear();
+
+        // draw the menu to the window
         mainMenu.draw(window);
+
         window.display();
     }
 
@@ -167,6 +171,8 @@ int main() {
 ```
 
 ### Using Plain SFML Components
+
+#### Note: For this code to work, arial.ttf must also be included in the source directory
 
 ```cpp
 #include <SFML/Graphics.hpp>
@@ -208,7 +214,7 @@ int main() {
 }
 ```
 
-As you can see, using the `Menu` class simplifies the code and is easier to scale.
+As you can see, using the `Menu` class simplifies the code and is more scalable
 
 ## Limitations
 
