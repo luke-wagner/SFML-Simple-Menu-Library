@@ -24,14 +24,17 @@ Your project must be configured to use SFML. If your project is not yet configur
 
 ### Visual Studio
 
-You will want to first clone the repo and then copy the  path to this directory.
+The first step is to clone the repo and then copy the path to this directory.
 
-Configuring your project to use this menu library is very similar to the process for configuring it for SFML, so it is recommended you consult [SFML's setup page]((https://www.sfml-dev.org/tutorials/2.5/start-vc.php)) for help.
+If your Visual Studio project is not yet configured to use SFML, follow the [steps on SFML's site](((https://www.sfml-dev.org/tutorials/2.5/start-vc.php))) to either create a new SFML project or configure your existing project.
 
-#### Steps (under project settings):
+If your project is already configured to use SFML, it is still recommended that you review the [project configuration process](((https://www.sfml-dev.org/tutorials/2.5/start-vc.php))), as configuring your project to use this menu library is a similar process.
 
-* Under additional include directories add ";
-'YourPathToTheRepoGoesHere'\src"
+#### Steps:
+
+* Go to project properties
+
+* Under additional include directories add ";'YourPathToTheRepoGoesHere'\src"
 
 ![image shows where to append necessary directory](docs/images/img1.png)
 
