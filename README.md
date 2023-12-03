@@ -24,7 +24,7 @@ Your project must be configured to use SFML. If your project is not yet configur
 
 ### Visual Studio
 
-The first step is to clone the repo and then copy the path to this directory.
+The first step is to clone the repo and then copy the path to this directory. **It is strongly recommended to choose the latest version of the "stable" branch.**
 
 If your Visual Studio project is not yet configured to use SFML, follow the [steps on SFML's site](((https://www.sfml-dev.org/tutorials/2.5/start-vc.php))) to either create a new SFML project or configure your existing project.
 
