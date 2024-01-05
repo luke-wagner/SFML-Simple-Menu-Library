@@ -67,15 +67,6 @@ Menu::~Menu()
 {
 }
 
-
-void Menu::setType(menuType type) {
-	if (!initialized) {
-		type = type;
-	} else {
-		std::cout << "ERROR: trying to set type after menu has been initialized. (Menu::setType())\n";
-	}
-}
-
 bool Menu::setDockingPosition(uiTools::cornerType corner)
 {
 	if (dockingPosition == corner) {
@@ -460,6 +451,14 @@ void Menu::draw(sf::RenderWindow& win)
 	if (menuShown && menuBoundsShown &&
 		(type == STATIC || (type == DYNAMIC && bounds.y > paddingY * 2))) {
 		win.draw(outline);
+	}
+}
+
+void Menu::setType(menuType type) {
+	if (!initialized) {
+		type = type;
+	} else {
+		std::cout << "ERROR: trying to set type after menu has been initialized. (Menu::setType())\n";
 	}
 }
 

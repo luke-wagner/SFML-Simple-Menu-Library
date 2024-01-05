@@ -33,13 +33,6 @@ public:
 
 	// ======================================================
 	// Mutators
-	/**
-	* Sets the menu to either DYNAMIC or STATIC
-	*
-	*   @param type - the menu type to set to
-	*/
-	void setType(menuType type);
-
 	// ------------------------------------------------------
 	/**
 	* Sets the menu's docking position relative to the window
@@ -261,6 +254,14 @@ private:
 
 	// ------------------------------------------------------
 	// Functions
+	/**
+	* Sets the menu to either DYNAMIC or STATIC
+	*
+	*   @param type - the menu type to set to
+	*/
+	void setType(menuType type);
+
+	// ------------------------------------------------------
 	/**
 	* Gets the coordinates of the menu's inner corner from the outer corner
 	*
